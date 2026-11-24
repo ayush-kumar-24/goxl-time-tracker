@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GoXL Team Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: forest sidebar, cream workspace, lime used only for the primary action and the active nav item (GoXL brand guide). */
+:root{
+  --forest:#1B4332; --forest-deep:#0F2A1E; --forest-mid:#295843; --lime:#C8E600; --lime-dim:#A8C200;
+  --bg:#F6F7F3; --panel:#FFFFFF; --ink:#142019; --muted:#4B5A52; --line:#DFE6DF; --soft:#EDF1EA;
+  --accent:#1B4332; --accent-ink:#F6F7F3; --accent-soft:#E3ECDC;
+  --good:#2E7D4F; --warn:#C9861C; --bad:#C4443A; --good-soft:#E0F0E5; --warn-soft:#FAEEDA; --bad-soft:#F9E3E0;
+  --c1:#1B4332; --c2:#C9861C; --c3:#6D4C9F; --c4:#2F6690; --c5:#B5446E; --c6:#5F7A00; --c7:#5B6B63;
+  --display:"Montserrat",system-ui,sans-serif; --body:"Montserrat",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --r:3px; color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+button,select,input,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+.app{display:grid;grid-template-columns:224px 1fr;height:100%}
+.side{background:var(--forest-deep);color:var(--bg);display:flex;flex-direction:column;padding:16px 12px;gap:2px;overflow:auto;border-right:3px solid var(--lime)}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px 18px}
+.brand b{font-size:17px;display:block;line-height:1.1;font-weight:800;letter-spacing:.02em;text-transform:uppercase}
+.brand span{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(246,247,243,.55)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;background:none;border:0;border-radius:var(--r);padding:9px 10px;cursor:pointer;color:rgba(246,247,243,.72);font-weight:600;font-size:13px}
+.nav:hover{background:rgba(255,255,255,.07);color:var(--bg)}
+.nav[aria-current="page"]{background:rgba(200,230,0,.12);color:var(--lime);box-shadow:inset 3px 0 0 var(--lime)}
+.nav .n{font-size:11px;font-weight:700;background:var(--bad);color:#fff;border-radius:99px;padding:1px 7px}
+.side :focus-visible{outline-color:var(--lime)}
+.me{margin-top:auto;border-top:1px solid rgba(246,247,243,.15);padding:12px 8px 0;display:flex;flex-direction:column;gap:8px}
+.me .row{display:flex;align-items:center;gap:8px}
+.me small{color:rgba(246,247,243,.6);display:block;font-size:11px;line-height:1.35}
+.me b{color:var(--bg)}
+.me .btn{background:transparent;color:var(--bg);border-color:rgba(246,247,243,.3)}
+.me .btn:hover{background:rgba(255,255,255,.08)}
+.wrap{display:flex;flex-direction:column;min-width:0;height:100%}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 28px;background:var(--panel);border-bottom:1px solid var(--line)}
+.top h1{font-size:18px;font-weight:800;letter-spacing:-.01em;margin-right:auto}
+.top label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:8px;border-radius:99px;padding:5px 12px;background:var(--soft);font-size:12px;color:var(--muted)}
+.pill.run{background:var(--accent-soft);color:var(--ink)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.run .dot{background:var(--good);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.run .dot{animation:none}}
+main{padding:24px 28px 48px;overflow:auto;flex:1}
+.lead{color:var(--muted);margin:0 0 20px;max-width:68ch}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--forest-mid);margin-bottom:6px}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;min-width:0}
+.card h2{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--forest);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card h2 small{font-weight:500;color:var(--muted);font-size:12px;letter-spacing:0;text-transform:none}
+.stack>.card+.card{margin-top:16px}
+.kpi b{display:block;font-size:26px;font-weight:500;font-family:var(--mono);color:var(--forest-deep);font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.kpi.bad b{color:var(--bad)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:var(--r);padding:8px 14px;cursor:pointer;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.btn:hover{border-color:var(--forest-mid)}
+.btn.pri{background:var(--lime);border-color:var(--lime);color:var(--forest-deep)}
+.btn.pri:hover{background:var(--lime-dim);border-color:var(--lime-dim)}
+.btn.dark{background:var(--forest);border-color:var(--forest);color:var(--bg)}
+.btn.sm{padding:4px 9px;font-size:11px}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--forest-mid);outline-offset:2px}
+select,input[type=text],input[type=number],input[type=date],input[type=search],textarea{border:1px solid var(--line);background:var(--panel);border-radius:var(--r);padding:8px 10px;min-width:0}
+select:focus,input:focus,textarea:focus{border-color:var(--forest-mid);outline:none;box-shadow:0 0 0 3px rgba(41,88,67,.14)}
+textarea{width:100%;resize:vertical;min-height:70px}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--forest)}
+.av{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:var(--r);background:var(--soft);color:var(--muted);white-space:nowrap}
+.chip i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.chip.bad{background:var(--bad-soft);color:var(--bad)} .chip.good{background:var(--good-soft);color:var(--good)} .chip.warn{background:var(--warn-soft);color:var(--warn)} .chip.acc{background:var(--accent-soft);color:var(--forest)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar .sp{margin-left:auto}
+.toolbar label{font-size:12px;font-weight:600}
+.board{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:14px;overflow-x:auto;padding-bottom:8px}
+.col{background:var(--soft);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:10px;min-height:120px}
+.col h3{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--forest);display:flex;justify-content:space-between;padding:2px 4px}
+.tcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:8px;text-align:left;width:100%}
+.tcard:hover{border-color:var(--forest-mid)}
+.tcard.blocked{border-left:3px solid var(--bad)}
+.tcard.doing{border-left:3px solid var(--forest)}
+.tcard b{font-weight:700;line-height:1.3}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.list{display:flex;flex-direction:column}
+.li{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);min-width:0}
+.li:first-child{border-top:0}
+.li .grow{flex:1;min-width:0}
+.li .grow>div:first-child{overflow-wrap:anywhere}
+.bar{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;display:flex}
+.bar>span{display:block;height:100%}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:top}
+th{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--forest-mid);font-weight:700;border-bottom:2px solid var(--forest)}
+td.r,th.r{text-align:right}
+td.wrapc{white-space:normal;min-width:160px;max-width:240px}
+.rowbad td{background:var(--bad-soft)}
+.chart{display:flex;align-items:flex-end;gap:18px;height:190px;padding:8px 4px 0;border-bottom:1px solid var(--line);background:repeating-linear-gradient(to top,transparent 0,transparent 39px,var(--line) 39px,var(--line) 40px)}
+.chart .d{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.chart .stack{width:100%;max-width:56px;display:flex;flex-direction:column-reverse;border-radius:2px 2px 0 0;overflow:hidden}
+.chart .v{font-size:11px;font-weight:600;font-family:var(--mono)}
+.xl{display:flex;gap:18px;padding:6px 4px;color:var(--muted);font-size:12px}
+.xl span{flex:1;text-align:center}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}
+.docs{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:16px}
+.paper{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:24px 28px;min-height:320px}
+.paper h2{font-size:20px;margin-bottom:4px;letter-spacing:-.01em;text-transform:none;color:var(--ink);font-weight:800}
+.paper p{max-width:65ch;margin:12px 0}
+.paper ul{padding-left:20px;max-width:65ch}
+.docrow{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:var(--r);cursor:pointer;border:1px solid transparent;width:100%;background:none;text-align:left}
+.docrow:hover{background:var(--soft)}
+.docrow[aria-current="true"]{background:var(--accent-soft);border-color:var(--forest-mid)}
+.ext{flex:none;width:34px;height:40px;border-radius:var(--r);background:var(--soft);display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--muted)}
+.chat{display:grid;grid-template-columns:200px 1fr;gap:16px;height:calc(100% - 4px);min-height:420px}
+.chans{display:flex;flex-direction:column;gap:2px}
+.chans button{text-align:left;background:none;border:0;border-radius:var(--r);padding:8px 10px;cursor:pointer;color:var(--muted);font-weight:600}
+.chans button[aria-current="true"]{background:var(--accent-soft);color:var(--forest);font-weight:700}
+.chans button:hover{background:var(--soft)}
+.room{display:flex;flex-direction:column;min-height:0;padding:0}
+.msgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:10px}
+.msg .t{font-size:11px;color:var(--muted);margin-left:6px;font-weight:400;font-family:var(--mono)}
+.msg p{margin:2px 0 0;max-width:70ch;overflow-wrap:anywhere}
+.compose{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.compose input{flex:1}
+.shade{position:fixed;inset:0;background:rgba(15,42,30,.5);z-index:20;display:flex;justify-content:flex-end}
+.drawer{width:min(460px,100%);height:100%;background:var(--panel);padding:20px;overflow:auto;display:flex;flex-direction:column;gap:16px;border-left:1px solid var(--line)}
+.drawer h2{font-size:18px;text-transform:none;letter-spacing:-.01em;color:var(--ink);font-weight:800}
+.field{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.field select,.field input{color:var(--ink);font-size:14px;font-weight:400}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sec{display:flex;flex-direction:column;gap:8px}
+.sec h3{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--forest)}
+.signin{position:fixed;inset:0;background:var(--bg);z-index:40;display:grid;place-items:center;padding:16px;overflow:auto}
+.signin .card{width:min(440px,100%);display:flex;flex-direction:column;gap:12px}
+.signin button.who{display:flex;gap:10px;align-items:center;border:1px solid var(--line);background:var(--panel);border-radius:var(--r);padding:8px 12px;cursor:pointer;text-align:left}
+.signin button.who:hover{border-color:var(--forest-mid)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--forest-deep);color:var(--bg);padding:10px 16px;border-radius:var(--r);z-index:60;font-weight:600;max-width:90vw;border-bottom:3px solid var(--lime)}
+.note{font-size:12px;color:var(--muted);margin-top:16px}
+/* Work Intelligence Engine screens */
+.health{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r);font-weight:700;margin-bottom:16px;border-left:4px solid}
+.health.Green{background:var(--good-soft);color:var(--good);border-color:var(--good)}
+.health.Attention{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
+.health.Critical{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.stat{background:var(--panel);padding:14px 16px}
+.stat .num{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--forest-deep)}
+.stat .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:2px;font-weight:600}
+.alert-row{padding:10px 12px;border-left:3px solid var(--warn);background:var(--warn-soft);border-radius:var(--r);margin-bottom:8px;font-size:13px}
+.alert-row.high{border-color:var(--bad);background:var(--bad-soft)}
+.alert-row b{display:block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.sum-list{margin:6px 0 0;padding-left:18px}
+.sum-list li{margin-bottom:4px}
+.fgrid{display:grid;gap:14px;margin-bottom:14px}
+.fg2{grid-template-columns:1fr 1fr}.fg4{grid-template-columns:repeat(4,1fr)}
+.fgrid label,.flabel{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.fgrid input,.fgrid select{width:100%}
+.etable td{padding:6px;vertical-align:middle}
+.etable input,.etable select{border-color:transparent;background:transparent;padding:7px 8px;font-size:13px;width:100%}
+.etable input:hover,.etable select:hover{border-color:var(--line)}
+.etable input:focus,.etable select:focus{background:var(--panel);border-color:var(--forest-mid)}
+.etable .blockrow td{padding:0 6px 10px}
+.blockpanel{padding:14px 16px;background:var(--bad-soft);border:1px dashed rgba(196,68,58,.4);border-radius:var(--r)}
+.rm{background:none;border:0;color:var(--bad);cursor:pointer;font-size:15px;padding:4px 6px;border-radius:var(--r)}
+.rm:hover{background:var(--bad-soft)}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .side{flex-direction:row;overflow-x:auto;padding:8px 12px;border-right:0;border-bottom:3px solid var(--lime);align-items:center}
+  .brand,.me{display:none}
+  .nav{width:auto;white-space:nowrap}
+  .g4,.g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g2,.fg2{grid-template-columns:1fr}
+  .fg4{grid-template-columns:1fr 1fr}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .docs,.chat{grid-template-columns:1fr}
+  .chat{height:auto}.room{height:460px}
+  .chans{flex-direction:row;overflow-x:auto}
+  .top,main{padding-left:16px;padding-right:16px}
+}
+@media (max-width:480px){.g4,.g3,.fg4{grid-template-columns:1fr}.chart,.xl{gap:8px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side"></aside>
+  <div class="wrap">
+    <header class="top" id="top"></header>
+    <main id="main"></main>
+  </div>
+</div>
+<div id="overlay"></div>
+<div id="toast"></div>
+
+<script>
+/* ---------- Sample data (clearly demo content) ---------- */
+const MIN = 60000, DAY = 864e5;
+const WEEK0 = new Date(2026, 10, 16, 0, 0, 0, 0).getTime(); // Monday 16 Nov 2026
+const people = [
+  {id:'viraj',   name:'Viraj',          role:'Founder & CEO',            cap:0,  member:false, c:'var(--c7)'},
+  {id:'sumit',   name:'Sumit Suman',    role:'Project Manager',          cap:40, member:true,  c:'var(--c1)'},
+  {id:'ayush',   name:'Ayush Kumar',    role:'AI Lead',                  cap:40, member:true,  c:'var(--c3)'},
+  {id:'aria',    name:'Aria',           role:'Full-stack AI Developer',  cap:40, member:true,  c:'var(--c4)'},
+  {id:'savitri', name:'Savitri',        role:'AWS Cloud & Backend',      cap:40, member:true,  c:'var(--c2)'},
+  {id:'pranjal', name:'Pranjal',        role:'AWS Cloud & Backend',      cap:40, member:true,  c:'var(--c6)'},
+  {id:'akshat',  name:'Akshat',         role:'Marketing',                cap:40, member:true,  c:'var(--c5)'},
+  {id:'bharat',  name:'Bharat Parasia', role:'Tech Advisor (part-time)', cap:6,  member:true,  c:'var(--c7)'}
+];
+const projects = [
+  {id:'clarityos', name:'ClarityOS',               c:'var(--c4)'},
+  {id:'ally',      name:'GoXL Ally',               c:'var(--c1)'},
+  {id:'wie',       name:'Work Intelligence Engine',c:'var(--c3)'},
+  {id:'site',      name:'Marketing & Launch',      c:'var(--c2)'}
+];
+const S = {
+  user:'viraj', view:'dashboard', channel:'general', open:null, reportTab:'weekly',
+  fPerson:'all', fProject:'all', docSel:'d1', docQ:'', docProj:'all',
+  active:{}, seq:100,
+  tasks:[
+    {id:'t1', title:'Finalize PID scoring schema',        project:'clarityos', who:'ayush',   est:6,  status:'done',  deps:[]},
+    {id:'t2', title:'Diagnosis API endpoints',            project:'clarityos', who:'aria',    est:10, status:'doing', deps:['t1']},
+    {id:'t3', title:'Provision staging on AWS (ECS + RDS)',project:'clarityos',who:'savitri', est:8,  status:'doing', deps:[]},
+    {id:'t4', title:'CI/CD pipeline and secrets',         project:'clarityos', who:'pranjal', est:6,  status:'todo',  deps:['t3']},
+    {id:'t5', title:'Founder report PDF generator',       project:'clarityos', who:'aria',    est:8,  status:'todo',  deps:['t2']},
+    {id:'t12',title:'Architecture review for ClarityOS',  project:'clarityos', who:'bharat',  est:2,  status:'todo',  deps:['t3']},
+    {id:'t6', title:'Ally conversation memory design',    project:'ally',      who:'ayush',   est:8,  status:'doing', deps:[]},
+    {id:'t7', title:'Ally backend: sessions and auth',    project:'ally',      who:'pranjal', est:12, status:'todo',  deps:['t3']},
+    {id:'t8', title:'Ally positioning and pricing copy',  project:'ally',      who:'akshat',  est:6,  status:'doing', deps:[]},
+    {id:'t9', title:'Partner pitch deck',                 project:'ally',      who:'sumit',   est:6,  status:'todo',  deps:['t8']},
+    {id:'t10',title:'Contributor log dashboard',          project:'wie',       who:'aria',    est:10, status:'todo',  deps:['t11']},
+    {id:'t11',title:'Time-entry data model on Postgres',  project:'wie',       who:'savitri', est:6,  status:'done',  deps:[]},
+    {id:'t13',title:'Launch email sequence',              project:'site',      who:'akshat',  est:6,  status:'todo',  deps:['t8']},
+    {id:'t14',title:'Sprint plan and weekly report',      project:'site',      who:'sumit',   est:6,  status:'doing', deps:[]},
+    {id:'t15',title:'LinkedIn launch posts',              project:'site',      who:'akshat',  est:4,  status:'done',  deps:[]}
+  ],
+  entries:[],
+  docs:[
+    {id:'d1',name:'ClarityOS PID scoring spec v2',type:'Spec',project:'clarityos',owner:'ayush',upd:'Tue 11:20',
+     body:'Defines how the Problem Identification (PID) score is calculated from the founder intake answers.\n\n- Seven diagnostic dimensions, each scored 0 to 5\n- Weighted roll-up with an override for critical gaps\n- Output feeds the founder report generator\n\nOpen question: whether weights should be editable per client engagement.'},
+    {id:'d2',name:'AWS staging architecture',type:'Spec',project:'clarityos',owner:'savitri',upd:'Tue 10:05',
+     body:'Staging runs on ECS Fargate behind an application load balancer, with RDS Postgres in private subnets.\n\n- Secrets in AWS Secrets Manager\n- One environment per client product, tagged by project\n- Cost alarms at 80% of the monthly budget'},
+    {id:'d3',name:'Ally positioning and tagline options',type:'Brief',project:'ally',owner:'akshat',upd:'Mon 16:40',
+     body:'Working draft of positioning for GoXL Ally, the founder companion.\n\n- Audience: first-generation founders\n- Promise: clarity before action\n- Three tagline directions for review on Friday'},
+    {id:'d4',name:'Partner proposal (draft)',type:'Proposal',project:'ally',owner:'sumit',upd:'Mon 12:15',
+     body:'Draft proposal for a distribution partner.\n\n- Scope of the Ally rollout\n- Revenue share structure, to be agreed\n- Timeline and responsibilities for each side'},
+    {id:'d5',name:'Sprint notes, 16 Nov',type:'Notes',project:'site',owner:'sumit',upd:'Mon 18:00',
+     body:'Sprint goal: staging live and Ally auth unblocked by Thursday.\n\n- Savitri owns staging; Pranjal and Bharat wait on it\n- Aria continues diagnosis endpoints\n- Akshat finishes positioning copy so the pitch deck and email sequence can start'},
+    {id:'d6',name:'Advisor review checklist',type:'Notes',project:'clarityos',owner:'bharat',upd:'Mon 17:30',
+     body:'What Bharat checks in each architecture review.\n\n- Data flow and where personal data is stored\n- Failure modes and rollback path\n- Cost per active client\n- What the team can maintain without help'}
+  ],
+  msgs:[
+    {ch:'general',who:'sumit',t:'09:58',x:'Good morning. Sprint goal is staging live by Thursday. Please log time from the board, not at the end of the day.'},
+    {ch:'general',who:'viraj',t:'10:02',x:'Thanks Sumit. Aria, Pranjal: shout early if the AWS work blocks you.'},
+    {ch:'general',who:'pranjal',t:'10:10',x:'Ally auth is waiting on the staging VPC. I added it as a dependency on the board.'},
+    {ch:'clarityos',who:'ayush',t:'10:41',x:'PID schema is final and marked done. Aria, the diagnosis endpoints are unblocked.'},
+    {ch:'clarityos',who:'aria',t:'10:44',x:'Picked it up and started my timer.'},
+    {ch:'clarityos',who:'savitri',t:'11:20',x:'RDS is up. Load balancer and Secrets Manager next, about two hours.'},
+    {ch:'ally',who:'akshat',t:'11:35',x:'Positioning draft is in Docs. I need feedback before I start the email sequence.'},
+    {ch:'ally',who:'bharat',t:'12:05',x:'Read it. Keep the tagline short. I will comment on the doc tonight.'},
+    {ch:'wie',who:'savitri',t:'09:30',x:'Time-entry tables are merged. The dashboard work can start whenever Aria is free.'},
+    {ch:'marketing',who:'akshat',t:'10:20',x:'LinkedIn posts for launch week are scheduled.'}
+  ],
+  channels:[['general','general'],['clarityos','ClarityOS'],['ally','GoXL Ally'],['wie','Work Intelligence Engine'],['marketing','marketing']]
+};
+// entries: [person, task, dayIndex, startHour, startMin, minutes]
+[['sumit','t14',0,10,0,90],['sumit','t14',0,14,0,120],['ayush','t1',0,10,0,180],['ayush','t1',0,15,0,120],['ayush','t6',0,17,30,60],
+ ['aria','t2',0,10,30,240],['aria','t2',0,15,30,150],['savitri','t3',0,10,0,200],['savitri','t11',0,14,0,180],
+ ['pranjal','t3',0,11,0,150],['pranjal','t7',0,15,0,120],['akshat','t15',0,10,0,210],['akshat','t8',0,15,0,120],['bharat','t3',0,17,0,45],
+ ['sumit','t14',1,10,0,100],['ayush','t6',1,10,0,150],['aria','t2',1,10,0,180],['savitri','t3',1,10,0,150],['savitri','t11',1,14,0,90],
+ ['pranjal','t3',1,10,30,120],['pranjal','t7',1,14,0,60],['akshat','t8',1,10,0,140],['bharat','t3',1,12,0,30]
+].forEach((e,i)=>{ const st=WEEK0+e[2]*DAY+(e[3]*60+e[4])*MIN; S.entries.push({id:'e'+i,person:e[0],task:e[1],start:st,end:st+e[5]*MIN}); });
+const now0 = Date.now();
+S.active = { ayush:{task:'t6',start:now0-47*MIN}, aria:{task:'t2',start:now0-95*MIN}, savitri:{task:'t3',start:now0-130*MIN}, akshat:{task:'t8',start:now0-20*MIN} };
+
+/* ---------- Access control, priorities (roles are sample assignments) ---------- */
+const ROLES = {super_admin:'Super Admin',founder:'Founder',project_admin:'Project Admin',project_lead:'Project Lead',pm:'Project Manager',member:'Member',advisor:'Advisor'};
+const PERMS = [['addProject','Create projects'],['suggestLead','Suggest a project lead'],['approveLead','Approve project leads'],['addTask','Add tasks'],['uploadSheet','Upload task sheet'],['setPriority','Set priority and due date'],['reassign','Reassign tasks'],['uploadDoc','Upload documents'],['viewReports','View reports'],['founderDash','View founder dashboard'],['manageAccess','Manage access (admin panel)']];
+const PRIO = {urgent:{n:'Urgent',o:0,cls:'bad'},high:{n:'High',o:1,cls:'warn'},medium:{n:'Medium',o:2,cls:''},low:{n:'Low',o:3,cls:''}};
+const RK0 = {viraj:'super_admin',sumit:'pm',ayush:'project_lead',aria:'member',savitri:'member',pranjal:'member',akshat:'member',bharat:'advisor'};
+const ACC0 = {sumit:['clarityos','ally','wie','site'],ayush:['clarityos','ally'],aria:['clarityos','wie'],savitri:['clarityos','wie'],pranjal:['clarityos','ally'],akshat:['ally','site'],bharat:['clarityos','ally']};
+people.forEach(p => { p.rk=RK0[p.id]; p.on=true; p.acc=ACC0[p.id]||[]; });
+const PRI0 = {t1:'high',t2:'urgent',t3:'urgent',t4:'high',t5:'medium',t12:'medium',t6:'high',t7:'high',t8:'medium',t9:'medium',t10:'low',t11:'medium',t13:'low',t14:'medium',t15:'low'};
+const DUE0 = {t2:'2026-11-20',t3:'2026-11-19',t4:'2026-11-21',t7:'2026-11-24',t8:'2026-11-20',t14:'2026-11-20'};
+S.tasks.forEach(t => { t.priority = PRI0[t.id]||'medium'; t.due = DUE0[t.id]||''; });
+projects.forEach(p => { p.lead = null; });
+PR_('clarityos').lead = 'ayush';
+S.leadReqs = [{id:'r1',project:'ally',nominee:'ayush',by:'sumit',status:'pending',at:Date.now()-36e5}];
+function PR_(id){ return projects.find(p=>p.id===id); }
+const mkPerm = (...ks) => Object.fromEntries(PERMS.map(([k]) => [k, ks.includes(k)]));
+const MGR = ['addProject','addTask','uploadSheet','setPriority','reassign','uploadDoc','viewReports'];
+Object.assign(S, {
+  fPrio:'all', sheetText:'', sheetRows:null, audit:[],
+  perms:{super_admin:mkPerm(...PERMS.map(p=>p[0])), founder:mkPerm(...MGR,'founderDash','approveLead'), project_admin:mkPerm(...MGR,'suggestLead'), project_lead:mkPerm(...MGR), pm:mkPerm(...MGR,'suggestLead'), member:mkPerm('uploadDoc','viewReports'), advisor:mkPerm('uploadDoc')},
+  channels:[['general','general',null],['clarityos','ClarityOS','clarityos'],['ally','GoXL Ally','ally'],['wie','Work Intelligence Engine','wie'],['marketing','marketing','site']]
+});
+
+/* ---------- Helpers ---------- */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $ = (s, r=document) => r.querySelector(s);
+const P = id => people.find(p => p.id === id);
+const T = id => S.tasks.find(t => t.id === id);
+const PR = id => projects.find(p => p.id === id);
+const members = () => people.filter(p => p.member);
+const activeMembers = () => people.filter(p => p.member && p.on);
+const can = (perm, uid=S.user) => !!(S.perms[P(uid).rk] && S.perms[P(uid).rk][perm]);
+const visIds = (uid=S.user) => ['super_admin','founder'].includes(P(uid).rk) ? projects.map(p=>p.id) : P(uid).acc;
+const visProjects = () => projects.filter(p => visIds().includes(p.id));
+const visTasks = () => S.tasks.filter(t => visIds().includes(t.project));
+const visChannels = () => S.channels.filter(c => !c[2] || visIds().includes(c[2]));
+const navOk = n => n[0]==='admin' ? can('manageAccess') : n[0]==='founder' ? can('founderDash') : n[0]==='reports' ? can('viewReports') : true;
+const prioChip = p => `<span class="chip ${PRIO[p].cls}">${PRIO[p].n}</span>`;
+function audit(x){ S.audit.unshift({t:Date.now(),who:S.user,x}); S.audit.length=Math.min(S.audit.length,30); }
+const initials = n => n.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+const av = id => `<span class="av" style="background:${P(id).c}" title="${esc(P(id).name)}">${initials(P(id).name)}</span>`;
+const h = m => (m/60).toFixed(1) + 'h';
+const clock = ms => { const s=Math.max(0,Math.floor(ms/1000)); return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(n=>String(n).padStart(2,'0')).join(':'); };
+const tm = ms => new Date(ms).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+const dayName = i => ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i];
+const allEntries = () => S.entries.concat(Object.entries(S.active).map(([p,a]) => ({id:'live-'+p,person:p,task:a.task,start:a.start,end:Date.now(),live:true})));
+const emin = e => (e.end - e.start) / MIN;
+const openDeps = t => t.deps.map(T).filter(d => d.status !== 'done');
+const blocked = t => t.status === 'todo' && openDeps(t).length > 0;
+const taskMin = id => allEntries().filter(e => e.task === id).reduce((a,e) => a + emin(e), 0);
+const reaches = (from, target) => { const seen = new Set(); const go = id => { if (id === target) return true; if (seen.has(id)) return false; seen.add(id); return T(id).deps.some(go); }; return go(from); };
+
+function toast(msg){ const el=$('#toast'); el.innerHTML = `<div class="toast" role="status">${esc(msg)}</div>`; clearTimeout(toast.t); toast.t=setTimeout(()=>el.innerHTML='',3200); }
+
+/* ---------- Actions ---------- */
+function stopTimer(pid){ const a=S.active[pid]; if(!a) return; S.entries.push({id:'e'+(++S.seq),person:pid,task:a.task,start:a.start,end:Date.now()}); delete S.active[pid]; }
+function startTimer(pid, tid){
+  const t=T(tid);
+  if (!P(pid).member) return toast('Switch to a team member to track time.');
+  if (t.status==='done') return toast('This task is already done.');
+  if (blocked(t)) return toast('Blocked. Waiting on: ' + openDeps(t).map(d=>d.title).join(', '));
+  if (S.active[pid] && S.active[pid].task===tid) return;
+  stopTimer(pid);
+  S.active[pid] = {task:tid,start:Date.now()};
+  if (t.status==='todo') t.status='doing';
+  toast('Timer started at ' + tm(Date.now()) + '. Your previous timer, if any, was stopped.');
+  render();
+}
+function markDone(tid){
+  const t=T(tid);
+  Object.keys(S.active).forEach(p => { if (S.active[p].task===tid) stopTimer(p); });
+  t.status='done';
+  const freed = S.tasks.filter(x => x.status==='todo' && x.deps.includes(tid) && openDeps(x).length===0);
+  toast(freed.length ? 'Done. Unblocked: ' + freed.map(x=>x.title).join(', ') : 'Done. Timer stopped and end time saved.');
+  render();
+}
+function addDep(tid, did){
+  const t=T(tid); if(!did) return;
+  if (did===tid || reaches(did,tid)) return toast('That would create a loop between tasks.');
+  if (t.deps.includes(did)) return;
+  t.deps.push(did);
+  if (t.status==='doing' && T(did).status!=='done'){
+    Object.keys(S.active).forEach(p => { if (S.active[p].task===tid) stopTimer(p); });
+    t.status='todo'; toast('Dependency added. Task paused until ' + T(did).title + ' is done.');
+  } else toast('Dependency added.');
+  render();
+}
+
+/* ---------- Views ---------- */
+const views = {};
+
+/* ---------- Task sheet import (CSV) ---------- */
+const SHEET_HEAD = 'title,project,assignee,priority,estimate,due,depends_on';
+const SHEET_EX = SHEET_HEAD + '\n"Write API docs for diagnosis endpoints",ClarityOS,Aria,High,5,2026-11-24,Diagnosis API endpoints\nLoad test staging,ClarityOS,Savitri,Medium,4,2026-11-26,Provision staging on AWS (ECS + RDS)\nLaunch week social calendar,Marketing & Launch,Akshat,Low,3,2026-11-27,\nBroken row example,Nowhere,Nobody,Soon,abc,tomorrow,';
+function parseCSV(t){
+  const rows=[]; let r=[], c='', q=false;
+  for(let i=0;i<t.length;i++){ const ch=t[i];
+    if(q){ if(ch==='"'){ if(t[i+1]==='"'){ c+='"'; i++; } else q=false; } else c+=ch; }
+    else if(ch==='"') q=true;
+    else if(ch===','){ r.push(c); c=''; }
+    else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&t[i+1]==='\n') i++; r.push(c); c=''; rows.push(r); r=[]; }
+    else c+=ch; }
+  if(c!==''||r.length){ r.push(c); rows.push(r); }
+  return rows.filter(x=>x.some(v=>v.trim()!==''));
+}
+function checkSheet(text){
+  const rows=parseCSV(text);
+  if(rows.length<2) return {err:'Add a header row and at least one task row.'};
+  const head=rows[0].map(x=>x.trim().toLowerCase().replace(/[^a-z]/g,''));
+  const ix=list=>head.findIndex(x=>list.includes(x));
+  const iT=ix(['title','task','name']), iP=ix(['project']), iA=ix(['assignee','owner','assignedto']), iPr=ix(['priority']), iE=ix(['estimate','est','hours']), iD=ix(['due','duedate','deadline']), iDp=ix(['dependson','dependencies','depends']);
+  if(iT<0||iP<0) return {err:'The header row needs at least "title" and "project" columns.'};
+  const own=rows.slice(1).map(r=>(r[iT]||'').trim().toLowerCase());
+  const known=S.tasks.map(t=>t.title.toLowerCase());
+  const PM={'':'medium',urgent:'urgent',p1:'urgent',high:'high',p2:'high',medium:'medium',p3:'medium',low:'low',p4:'low'};
+  return {rows:rows.slice(1).map((r,i)=>{
+    const g=k=>k<0?'':(r[k]||'').trim(), errs=[];
+    const title=g(iT); if(!title) errs.push('Title is missing');
+    const pv=g(iP).toLowerCase(), proj=projects.find(p=>p.id===pv||p.name.toLowerCase()===pv);
+    if(!proj) errs.push('Unknown project'); else if(!visIds().includes(proj.id)) errs.push('You have no access to '+proj.name);
+    const an=g(iA).toLowerCase(), m=activeMembers().find(x=>x.name.toLowerCase()===an||x.name.split(' ')[0].toLowerCase()===an);
+    if(!an) errs.push('Assignee is missing'); else if(!m) errs.push('Unknown or inactive assignee'); else if(proj&&!visIds(m.id).includes(proj.id)) errs.push(m.name+' has no access to this project');
+    const prKey=g(iPr).toLowerCase(), pr=PM[prKey]||null; if(!pr) errs.push('Priority must be Urgent, High, Medium or Low');
+    const ev=g(iE), est=ev===''?4:parseFloat(ev); if(!(est>0)) errs.push('Estimate must be a number of hours');
+    const due=g(iD); if(due&&!/^\d{4}-\d{2}-\d{2}$/.test(due)) errs.push('Due date must look like 2026-11-30');
+    const depTitles=g(iDp).split(';').map(x=>x.trim()).filter(Boolean);
+    depTitles.forEach(d=>{ if(!own.includes(d.toLowerCase())&&!known.includes(d.toLowerCase())) errs.push('Unknown dependency: '+d); });
+    return {n:i+2,title,proj,m,pr,est:est>0?est:0,due,depTitles,errs};
+  })};
+}
+function importSheet(){
+  const R=S.sheetRows; if(!R||!R.rows) return;
+  if(!can('uploadSheet')) return toast('Your role cannot upload task sheets.');
+  const ok=R.rows.filter(r=>!r.errs.length), made=[];
+  ok.forEach(r=>{ const t={id:'t'+(++S.seq),title:r.title,project:r.proj.id,who:r.m.id,est:r.est,status:'todo',deps:[],priority:r.pr,due:r.due}; S.tasks.push(t); made.push([t,r]); });
+  let skipped=0;
+  made.forEach(([t,r])=>r.depTitles.forEach(dt=>{ const d=S.tasks.find(x=>x.id!==t.id&&x.title.toLowerCase()===dt.toLowerCase()); if(!d||t.deps.includes(d.id)||reaches(d.id,t.id)){ skipped++; return; } t.deps.push(d.id); }));
+  audit('Imported '+ok.length+' tasks from a sheet');
+  S.sheetRows=null; S.sheetText=''; S.open=null;
+  toast('Imported '+ok.length+' task'+(ok.length===1?'':'s')+(skipped?'. '+skipped+' dependency link(s) skipped.':'.'));
+  render();
+}
+function sheetHTML(){
+  const R=S.sheetRows; let prev='';
+  if(R&&R.err) prev=`<span class="chip bad" style="align-self:flex-start">${esc(R.err)}</span>`;
+  else if(R){ const ok=R.rows.filter(r=>!r.errs.length).length, bad=R.rows.length-ok;
+    prev=`<div class="meta"><span class="chip good">${ok} ready</span><span class="chip ${bad?'bad':''}">${bad} with problems</span><span>Rows with problems are skipped.</span></div>
+    <div class="tablewrap"><table><thead><tr><th>Row</th><th>Task</th><th>Project</th><th>Assignee</th><th>Priority</th><th class="r">Est.</th><th>Due</th><th>Check</th></tr></thead><tbody>
+    ${R.rows.map(r=>`<tr class="${r.errs.length?'rowbad':''}"><td>${r.n}</td><td style="white-space:normal;min-width:150px">${esc(r.title||'(no title)')}</td><td>${r.proj?esc(r.proj.name):'–'}</td><td>${r.m?esc(r.m.name):'–'}</td><td>${r.pr?prioChip(r.pr):'–'}</td><td class="r">${r.est||'–'}</td><td>${esc(r.due||'–')}</td><td style="white-space:normal;min-width:170px">${r.errs.length?esc(r.errs.join('. ')):'Ready'}</td></tr>`).join('')}</tbody></table></div>
+    <button class="btn pri" data-act="sheetimport" ${ok?'':'disabled'} style="align-self:flex-start">Import ${ok} task${ok===1?'':'s'}</button>`; }
+  return `<div class="shade" data-act="close"><div class="drawer" style="width:min(760px,100%)">
+    <div style="display:flex;justify-content:space-between;gap:12px"><h2>Upload task sheet</h2><button class="btn sm" data-act="close">Close</button></div>
+    <p class="muted" style="margin:0">Upload a CSV exported from Excel or Google Sheets, or paste rows. Columns: <span class="mono">title, project, assignee, priority, estimate, due, depends_on</span>. Separate several dependencies with semicolons. You can only add tasks to projects you can access.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn" for="sheetfile" style="cursor:pointer">Choose CSV file</label><input id="sheetfile" type="file" accept=".csv,.txt" hidden><button class="btn" data-act="sheetexample">Use example</button><button class="btn" data-act="sheetcopy">Copy header row</button></div>
+    <textarea id="sheetText" rows="7" aria-label="Task sheet rows" placeholder="${SHEET_HEAD}">${esc(S.sheetText)}</textarea>
+    <button class="btn pri" data-act="sheetparse" style="align-self:flex-start">Check sheet</button>${prev}</div></div>`;
+}
+
+/* ---------- Admin actions ---------- */
+function setRole(pid, rk){
+  const p=P(pid);
+  if(p.rk==='super_admin' && rk!=='super_admin' && !people.some(x=>x.id!==pid&&x.on&&x.rk==='super_admin')){ toast('Keep at least one active Super Admin.'); return render(); }
+  audit(p.name+': role changed from '+ROLES[p.rk]+' to '+ROLES[rk]); p.rk=rk; toast(p.name+' is now '+ROLES[rk]+'.'); render();
+}
+function toggleOn(pid){
+  const p=P(pid);
+  if(pid===S.user) return toast('You cannot deactivate your own account.');
+  if(p.on && p.rk==='super_admin' && !people.some(x=>x.id!==pid&&x.on&&x.rk==='super_admin')) return toast('Keep at least one active Super Admin.');
+  p.on=!p.on; if(!p.on) stopTimer(pid);
+  audit(p.name+(p.on?' reactivated':' deactivated')); toast(p.name+(p.on?' can sign in again.':' can no longer sign in. Their timer was stopped.')); render();
+}
+function invite(){
+  const n=$('#inName').value.trim(); if(!n) return toast('Enter a name to invite.');
+  const id='u'+(++S.seq);
+  people.push({id,name:n,role:$('#inJob').value.trim()||'Team member',cap:40,member:true,c:'var(--c'+((people.length%7)+1)+')',rk:$('#inRole').value,on:true,acc:[]});
+  audit('Invited '+n+' as '+ROLES[$('#inRole').value]); toast(n+' added. Grant project access below.'); render();
+}
+
+/* ---------- Projects and document upload ---------- */
+function addDocFile(f, pid){
+  const add=body=>{ const d={id:'d'+(++S.seq),name:f.name,type:(f.name.split('.').pop()||'file'),project:pid,owner:S.user,upd:'Just now',body}; S.docs.unshift(d); S.docSel=d.id; toast('Uploaded '+f.name+' to '+PR(pid).name+'.'); render(); };
+  if(/\.(txt|md|csv)$/i.test(f.name)){ const r=new FileReader(); r.onload=()=>add(String(r.result).slice(0,4000)); r.onerror=()=>add('This file could not be read.'); r.readAsText(f); }
+  else add('Preview is not available for this file type in the prototype. The file would open in a viewer in the real platform.');
+}
+function createProject(){
+  if(!can('addProject')) return toast('Your role cannot create projects.');
+  const name=$('#npName').value.trim();
+  if(!name) return toast('Give the project a name.');
+  if(projects.some(p=>p.name.toLowerCase()===name.toLowerCase())) return toast('A project with that name already exists.');
+  const id='p'+(++S.seq), me=P(S.user);
+  projects.push({id,name,lead:null,desc:$('#npDesc').value.trim(),c:'var(--c'+((projects.length%7)+1)+')'});
+  if(!['super_admin','founder'].includes(me.rk)) me.acc.push(id);
+  S.channels.push([id,name,id]);
+  audit('Created project '+name);
+  const files=S.npFiles||[]; S.npFiles=[];
+  S.open=null; S.view='projects'; render();
+  toast('Project "'+name+'" created'+(files.length?'. Uploading '+files.length+' document(s).':'.'));
+  files.forEach(f=>addDocFile(f,id));
+}
+
+/* ---------- Project lead: suggest, then Founder or Super Admin approves ---------- */
+function leadRow(p){
+  const lead=p.lead?P(p.lead):null, pend=S.leadReqs.find(r=>r.project===p.id&&r.status==='pending');
+  return `<div class="meta" style="margin-bottom:10px"><b style="color:var(--ink)">Project lead</b>${lead?`<span class="chip good">${esc(lead.name)}</span>`:'<span class="chip">Not set</span>'}
+    ${pend?`<span class="chip warn">Pending: ${esc(P(pend.nominee).name)}, suggested by ${esc(P(pend.by).name.split(' ')[0])}</span>`:''}
+    ${pend&&can('approveLead')?`<button class="btn sm pri" data-act="leadok" data-id="${pend.id}">Approve</button><button class="btn sm" data-act="leadno" data-id="${pend.id}">Reject</button>`:''}
+    ${!pend&&can('suggestLead')?`<select id="lead-${p.id}" aria-label="Suggest a lead for ${esc(p.name)}"><option value="">Suggest a lead…</option>${activeMembers().filter(m=>m.id!==p.lead).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select><button class="btn sm" data-act="leadsuggest" data-id="${p.id}">Suggest</button>`:''}</div>`;
+}
+function sysMsg(pid,text){ S.msgs.push({ch:pid,who:S.user,t:tm(Date.now()),x:text}); }
+function suggestLead(pid,nid){
+  if(!can('suggestLead')) return toast('Your role cannot suggest a project lead.');
+  if(S.leadReqs.some(r=>r.project===pid&&r.status==='pending')) return toast('A suggestion is already waiting for approval.');
+  S.leadReqs.push({id:'r'+(++S.seq),project:pid,nominee:nid,by:S.user,status:'pending',at:Date.now()});
+  audit('Suggested '+P(nid).name+' as lead of '+PR(pid).name);
+  sysMsg(pid,'Suggested '+P(nid).name+' as project lead. Waiting for a Founder or Super Admin to approve.');
+  toast('Suggestion sent. A Founder or Super Admin needs to approve it.'); render();
+}
+function decideLead(rid,ok){
+  if(!can('approveLead')) return toast('Only a Founder or Super Admin can decide this.');
+  const r=S.leadReqs.find(x=>x.id===rid); if(!r||r.status!=='pending') return;
+  r.status=ok?'approved':'rejected'; r.decidedBy=S.user; const p=PR(r.project), n=P(r.nominee);
+  if(ok){ p.lead=r.nominee; if(!['super_admin','founder'].includes(n.rk)&&!n.acc.includes(p.id)) n.acc.push(p.id); }
+  audit((ok?'Approved ':'Rejected ')+n.name+' as lead of '+p.name);
+  sysMsg(p.id,ok?n.name+' is now the project lead.':'The suggestion of '+n.name+' as project lead was not approved.');
+  toast(ok?n.name+' is now lead of '+p.name+'.':'Suggestion rejected.'); render();
+}
+views.admin = () => {
+  const rk=Object.keys(ROLES), all=p=>['super_admin','founder'].includes(p.rk);
+  return `<div class="card"><h2>People and access <small>${people.filter(p=>p.on).length} active of ${people.length}</small></h2><div class="tablewrap"><table><thead><tr><th>Person</th><th>Role</th><th>Status</th>${projects.map(p=>`<th>${esc(p.name)}</th>`).join('')}</tr></thead><tbody>
+    ${people.map(p=>`<tr><td><div style="display:flex;gap:8px;align-items:center">${av(p.id)}<span><b>${esc(p.name)}</b><br><span class="muted">${esc(p.role)}</span></span></div></td>
+      <td><select data-role="${p.id}" aria-label="Role for ${esc(p.name)}">${rk.map(k=>`<option value="${k}" ${p.rk===k?'selected':''}>${ROLES[k]}</option>`).join('')}</select></td>
+      <td><button class="btn sm ${p.on?'':'danger'}" data-act="toggleon" data-id="${p.id}">${p.on?'Active':'Inactive'}</button></td>
+      ${projects.map(pr=>`<td><input type="checkbox" data-acc="${p.id}:${pr.id}" ${all(p)||p.acc.includes(pr.id)?'checked':''} ${all(p)?'disabled':''} aria-label="${esc(p.name)} access to ${esc(pr.name)}"></td>`).join('')}</tr>`).join('')}
+    </tbody></table></div><p class="note" style="margin-top:10px">Super Admin and Founder always see every project. Everyone else only sees the projects ticked here, including tasks, docs and chat channels.</p></div>
+  <div class="card" style="margin-top:16px"><h2>What each role can do <small>Super Admin is fixed</small></h2><div class="tablewrap"><table><thead><tr><th>Permission</th>${rk.map(k=>`<th class="r">${ROLES[k]}</th>`).join('')}</tr></thead><tbody>
+    ${PERMS.map(([k,n])=>`<tr><td>${n}</td>${rk.map(r=>`<td class="r"><input type="checkbox" data-perm="${r}:${k}" ${S.perms[r][k]?'checked':''} ${r==='super_admin'?'disabled':''} aria-label="${ROLES[r]}: ${n}"></td>`).join('')}</tr>`).join('')}
+    <tr><td>Add task dependencies</td>${rk.map(()=>'<td class="r"><input type="checkbox" checked disabled aria-label="Always on"></td>').join('')}</tr></tbody></table></div></div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h2>Invite a person</h2><div style="display:flex;flex-direction:column;gap:10px">
+      <label class="field">Name<input type="text" id="inName" placeholder="Full name"></label>
+      <label class="field">Job title<input type="text" id="inJob" placeholder="For example, QA engineer"></label>
+      <label class="field">Role<select id="inRole">${rk.filter(k=>k!=='super_admin').map(k=>`<option value="${k}" ${k==='member'?'selected':''}>${ROLES[k]}</option>`).join('')}</select></label>
+      <button class="btn pri" data-act="invite" style="align-self:flex-start">Add person</button></div></div>
+    <div class="card"><h2>Activity log <small>this session</small></h2><div class="list">${S.audit.length?S.audit.slice(0,10).map(a=>`<div class="li"><div class="grow"><div>${esc(a.x)}</div><div class="muted">${esc(P(a.who).name)} · ${tm(a.t)}</div></div></div>`).join(''):'<p class="muted" style="margin:0">No changes yet. Change a role or a permission to see it logged here.</p>'}</div></div>
+  </div>`;
+};
+const statusChip = t => t.status==='done' ? '<span class="chip good">Done</span>' : blocked(t) ? '<span class="chip bad">Blocked</span>' : t.status==='doing' ? '<span class="chip acc">In progress</span>' : '<span class="chip">Ready</span>';
+const projChip = id => `<span class="chip"><i style="background:${PR(id).c}"></i>${esc(PR(id).name)}</span>`;
+
+/* ---------- Work Intelligence Engine: daily logs and founder analytics (ported from the reference app) ---------- */
+const LOG_CATS = ['Client Diagnostics','Client Delivery / Ops','Product — ClarityOS','Product — GoXL Ally','Product — BROKK-N','Engineering / Dev','Design','Research & QA','Content & Marketing','Sales & BD','Admin & Finance','Founder Support'];
+const DEPTS = ['Product','Engineering / AI','Design','Research & QA','Client Ops','Content & Marketing','Sales & BD','Finance & Admin',"Founder's Office"];
+const DEPT0 = {viraj:"Founder's Office",sumit:'Product',ayush:'Engineering / AI',aria:'Engineering / AI',savitri:'Engineering / AI',pranjal:'Engineering / AI',akshat:'Content & Marketing',bharat:'Engineering / AI'};
+const isoDay = ms => { const d=new Date(ms); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const today = () => isoDay(Date.now());
+const ago = k => isoDay(Date.now() - k*DAY);
+const dayNum = s => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||''); return m ? Date.UTC(+m[1],+m[2]-1,+m[3])/DAY : NaN; };
+const daysBetween = (s, ref=today()) => { const a=dayNum(s); return isNaN(a) ? 0 : Math.max(0, Math.round(dayNum(ref)-a)); };
+Object.assign(S, {logs:[], drafts:{}, fRange:'week', exec:null});
+const blankTask = () => ({taskName:'',category:'',priority:'Medium',plannedTime:'',actualTime:'',status:'Not Started',percentComplete:'',deliverable:'',blocked:false,blockedBy:'',impactLevel:'Medium',blockReason:'',waitingSince:'',expectedResolution:'',link:''});
+const blankNT = () => ({assignedTo:'',task:'',priority:'Medium',deadline:'',reason:''});
+// Seed helpers. blk = [blockedBy, impact, waitingSince (days ago), expected resolution (days ago, negative = future), reason]
+const LT = (name,cat,pri,pl,ac,st,pct,blk) => Object.assign(blankTask(),{taskName:name,category:cat,priority:pri,plannedTime:pl,actualTime:ac,status:st,percentComplete:String(pct),blocked:!!blk,blockedBy:blk?blk[0]:'',impactLevel:blk?blk[1]:'Medium',blockReason:blk?blk[4]:'',waitingSince:blk?ago(blk[2]):'',expectedResolution:blk?ago(blk[3]):''});
+const LOG = (who,k,tasks,o={}) => { const p=people.find(x=>x.name===who); return {id:'l'+(++S.seq),submittedAt:Date.now(),employee:{name:who,department:DEPT0[p.id],role:p.role,date:ago(k)},tasks,newTasksForOthers:o.nt||[],wins:o.wins||'',challenges:{slowedDown:o.slow||'',needsSupport:o.support||''},learnings:{learned:o.learn||'',processImprovement:o.proc||''},tomorrowPlan:o.plan||''}; };
+S.logs.push(
+  LOG('Ayush Kumar',0,[LT('Ally conversation memory design','Product — GoXL Ally','High','3h','3.5h','In Progress',60),LT('Review PID scoring edge cases','Product — ClarityOS','Medium','2h','1.5h','Completed',100)],{wins:'✔ PID edge cases closed\n✔ Memory design draft shared with Bharat',slow:'No staging data to test recall against',support:'Decide how long Ally remembers a founder\'s history',learn:'Short summaries recall better than full transcripts',plan:'Finish memory design\nPair with Aria on diagnosis endpoints'}),
+  LOG('Aria',0,[LT('Diagnosis API endpoints','Engineering / Dev','High','5h','6h','In Progress',70),LT('Founder report PDF generator','Engineering / Dev','Medium','3h','0.5h','Not Started',10,['Savitri','High',2,1,'Needs staging database credentials'])],{wins:'✔ Intake and scoring endpoints return real data',slow:'No staging environment to test against',nt:[{assignedTo:'Savitri',task:'Share staging DB credentials',priority:'High',deadline:ago(-1),reason:'Report generator is blocked'}],plan:'Finish endpoint validation'}),
+  LOG('Savitri',0,[LT('Provision staging on AWS (ECS + RDS)','Engineering / Dev','High','6h','8h','In Progress',75),LT('Secrets Manager and cost alarms','Engineering / Dev','Medium','2h','1h','Waiting',30,['Viraj (Founder)','High',3,2,'Needs approval for the AWS billing limit'])],{wins:'✔ RDS is up in private subnets',slow:'Billing limit approval is holding up the rest',support:'Approve the AWS budget so staging can finish',plan:'Load balancer, then share credentials'}),
+  LOG('Pranjal',0,[LT('Ally auth and sessions','Engineering / Dev','High','5h','0h','Not Started',0,['Savitri','High',2,1,'Waiting on the staging VPC']),LT('CI/CD pipeline draft','Engineering / Dev','Medium','3h','3h','In Progress',40)],{wins:'✔ Pipeline draft runs on every push',slow:'Auth work cannot start without the VPC'}),
+  LOG('Akshat',0,[LT('Ally positioning and pricing copy','Content & Marketing','High','4h','4h','In Progress',80),LT('LinkedIn launch posts','Content & Marketing','Low','2h','1.5h','Completed',100)],{wins:'✔ Launch posts scheduled',plan:'Send positioning copy to Sumit and Bharat'}),
+  LOG('Sumit Suman',0,[LT('Sprint plan and weekly report','Admin & Finance','Medium','2h','2h','Completed',100),LT('Partner pitch deck','Sales & BD','Medium','3h','1h','Not Started',20,['Akshat','Medium',1,-1,'Needs final positioning copy'])],{wins:'✔ Sprint plan agreed with the team',plan:'Start pitch deck once copy lands'}),
+  LOG('Ayush Kumar',1,[LT('Review PID scoring edge cases','Product — ClarityOS','Medium','3h','3h','In Progress',70),LT('Ally architecture notes','Product — GoXL Ally','Medium','2h','2h','Completed',100)],{wins:'✔ Architecture notes shared'}),
+  LOG('Aria',1,[LT('Diagnosis API endpoints','Engineering / Dev','High','6h','6.5h','In Progress',45)],{wins:'✔ Schema wired to the database layer'}),
+  LOG('Savitri',1,[LT('Provision staging on AWS (ECS + RDS)','Engineering / Dev','High','6h','9h','In Progress',50),LT('Time-entry tables for the work engine','Engineering / Dev','Medium','2h','2h','Completed',100)],{wins:'✔ Time-entry tables merged',slow:'Networking took longer than planned'}),
+  LOG('Pranjal',1,[LT('CI/CD pipeline draft','Engineering / Dev','Medium','4h','3.5h','In Progress',25),LT('Ally backend design','Engineering / Dev','High','3h','3h','Completed',100)]),
+  LOG('Akshat',1,[LT('Ally positioning and pricing copy','Content & Marketing','High','4h','3h','In Progress',50)],{wins:'✔ Three tagline directions drafted'}),
+  LOG('Sumit Suman',1,[LT('Sprint plan and weekly report','Admin & Finance','Medium','3h','3h','In Progress',70)]),
+  LOG('Ayush Kumar',2,[LT('PID scoring schema','Product — ClarityOS','High','6h','6h','Completed',100)],{wins:'✔ Scoring schema final'}),
+  LOG('Aria',2,[LT('Diagnosis API endpoints','Engineering / Dev','High','5h','5h','In Progress',20)]),
+  LOG('Savitri',2,[LT('Provision staging on AWS (ECS + RDS)','Engineering / Dev','High','6h','7h','In Progress',25)]),
+  LOG('Akshat',2,[LT('LinkedIn launch posts','Content & Marketing','Low','3h','3h','In Progress',60)]),
+  LOG('Sumit Suman',3,[LT('Client check-ins','Client Ops','Medium','3h','3h','Completed',100)].map(t=>Object.assign(t,{category:'Client Delivery / Ops'}))),
+  LOG('Pranjal',3,[LT('Ally backend design','Engineering / Dev','High','4h','4h','In Progress',60)])
+);
+function parseHours(v){ if(v==null||v==='') return 0; if(typeof v==='number') return v; const s=String(v).trim().toLowerCase(); let h=0; const hm=s.match(/([\d.]+)\s*h/), mm=s.match(/([\d.]+)\s*m/), cm=s.match(/^(\d+):(\d+)$/); if(hm||mm){ if(hm) h+=parseFloat(hm[1]); if(mm) h+=parseFloat(mm[1])/60; } else if(cm) h=parseInt(cm[1],10)+parseInt(cm[2],10)/60; else if(!isNaN(parseFloat(s))) h=parseFloat(s); return Math.round(h*100)/100; }
+const r2 = n => Math.round(n*100)/100;
+function allLogTasks(logs){ const rows=[]; logs.forEach(l=>(l.tasks||[]).forEach(t=>rows.push(Object.assign({},t,{contributor:l.employee.name,department:l.employee.department,date:l.employee.date})))); return rows; }
+function teamSummary(logs){
+  const tasks=allLogTasks(logs), n=tasks.length, completed=tasks.filter(t=>t.status==='Completed').length, blockedN=tasks.filter(t=>t.blocked).length;
+  const hours=tasks.reduce((a,t)=>a+parseHours(t.actualTime),0), planned=tasks.reduce((a,t)=>a+parseHours(t.plannedTime),0);
+  const lost=tasks.filter(t=>t.blocked).reduce((a,t)=>a+Math.max(0,parseHours(t.plannedTime)-parseHours(t.actualTime)),0);
+  const ratio=n?completed/n:1, br=n?blockedN/n:0;
+  return {totalContributors:new Set(logs.map(l=>l.employee.name.trim().toLowerCase())).size,tasksAssigned:n,tasksCompleted:completed,tasksPending:tasks.filter(t=>t.status==='Not Started').length,tasksInProgress:tasks.filter(t=>t.status==='In Progress'||t.status==='Waiting').length,blockedTasks:blockedN,completionPct:n?Math.round(ratio*1000)/10:0,avgProductivityPct:n?Math.round(tasks.reduce((a,t)=>a+(Number(t.percentComplete)||0),0)/n*10)/10:0,totalHoursWorked:r2(hours),plannedHoursTotal:r2(planned),hoursLost:r2(lost),overallHealth:(ratio>=.75&&br<.15)?'Green':(ratio>=.5&&br<.3)?'Attention Needed':'Critical'};
+}
+function contributorDash(logs){
+  const by={};
+  logs.forEach(l=>{ const k=l.employee.name; const c=by[k]||(by[k]={contributor:k,department:l.employee.department,role:l.employee.role,total:0,done:0,pending:0,blocked:0,hours:0,ps:0,pc:0,ach:[],bot:[],sup:[]});
+    (l.tasks||[]).forEach(t=>{ c.total++; if(t.status==='Completed')c.done++; if(t.status==='Not Started')c.pending++; if(t.blocked)c.blocked++; c.hours+=parseHours(t.actualTime); c.ps+=Number(t.percentComplete)||0; c.pc++; });
+    if(l.wins)c.ach.push(l.wins); if(l.challenges&&l.challenges.slowedDown)c.bot.push(l.challenges.slowedDown); if(l.challenges&&l.challenges.needsSupport)c.sup.push(l.challenges.needsSupport); });
+  return Object.values(by).map(c=>({contributor:c.contributor,department:c.department,role:c.role,totalTasks:c.total,completed:c.done,pending:c.pending,blocked:c.blocked,hoursWorked:r2(c.hours),productivityScore:c.pc?Math.round(c.ps/c.pc):0,majorAchievement:c.ach.slice(-1)[0]||'—',currentBottleneck:c.bot.slice(-1)[0]||'—',supportNeeded:c.sup.slice(-1)[0]||'—'}));
+}
+function dependencyDash(logs){
+  const rows=[]; logs.forEach(l=>(l.tasks||[]).forEach(t=>{ if(t.blocked){ const d=daysBetween(t.waitingSince); rows.push({waitingPerson:l.employee.name,blockedBy:t.blockedBy||'—',task:t.taskName,reason:t.blockReason||'—',daysWaiting:d,expectedResolution:t.expectedResolution||'—',priority:t.priority||'—',impactLevel:t.impactLevel||'—',suggestedAction:(t.impactLevel==='High'||d>=3)?'Escalate to founder and flag as a critical bottleneck':'Follow up directly with the blocking party'}); } }));
+  return rows.sort((a,b)=>b.daysWaiting-a.daysWaiting);
+}
+function distribution(logs){
+  const pc=contributorDash(logs), tasks=allLogTasks(logs), cat={}; let delay=0, dn=0;
+  tasks.forEach(t=>{ const c=t.category||'Uncategorized'; cat[c]=(cat[c]||0)+1; const p=parseHours(t.plannedTime), a=parseHours(t.actualTime); if(p>0){ delay+=a-p; dn++; } });
+  const sorted=[...pc].sort((a,b)=>b.totalTasks-a.totalTasks);
+  return {mostTasks:sorted[0]?sorted[0].contributor:'—',leastTasks:sorted.length?sorted[sorted.length-1].contributor:'—',averageDelayHours:dn?r2(delay/dn):0,mostCommonCategory:(Object.entries(cat).sort((a,b)=>b[1]-a[1])[0]||['—'])[0],categoryBreakdown:cat};
+}
+function founderAlerts(logs){
+  const al=[], deps=dependencyDash(logs), cs=contributorDash(logs);
+  deps.forEach(d=>{ if(d.expectedResolution!=='—'){ const x=daysBetween(d.expectedResolution); if(x>0) al.push({type:'Missed Deadline',detail:`"${d.task}" (${d.waitingPerson}): expected resolution was ${x} day(s) ago, still blocked by ${d.blockedBy}.`}); } });
+  const bc={}; deps.forEach(d=>{ bc[d.blockedBy]=(bc[d.blockedBy]||0)+1; });
+  Object.entries(bc).forEach(([w,c])=>{ if(c>=2&&w!=='—') al.push({type:'Repeated Blocker',detail:`${w} is blocking ${c} tasks across the team. This looks like a systemic dependency, not a one-off.`}); });
+  const avg=cs.length?cs.reduce((a,c)=>a+c.hoursWorked,0)/cs.length:0;
+  cs.forEach(c=>{ if(avg>0&&c.hoursWorked>avg*1.5&&c.hoursWorked>6) al.push({type:'Team Overload',detail:`${c.contributor} logged ${c.hoursWorked}h against a team average of ${Math.round(avg*10)/10}h. Check for burnout risk.`}); });
+  const known=new Set(logs.map(l=>l.employee.name.trim().toLowerCase()));
+  logs.forEach(l=>(l.newTasksForOthers||[]).forEach(nt=>{ if(nt.assignedTo&&!known.has(nt.assignedTo.trim().toLowerCase())) al.push({type:'Unassigned / Untracked Work',detail:`"${nt.task}" assigned to ${nt.assignedTo} by ${l.employee.name}. No log on file for ${nt.assignedTo} in this range.`}); }));
+  deps.forEach(d=>{ if(d.impactLevel==='High') al.push({type:'High-Risk Dependency',detail:`"${d.task}" (${d.waitingPerson}) is High impact, blocked by ${d.blockedBy} for ${d.daysWaiting} day(s).`}); });
+  return al;
+}
+const buildDash = logs => ({teamSummary:teamSummary(logs),contributors:contributorDash(logs),dependencies:dependencyDash(logs),distribution:distribution(logs),alerts:founderAlerts(logs),logCount:logs.length});
+const logRange = () => S.fRange==='today' ? {from:today(),to:today()} : S.fRange==='month' ? {from:ago(29),to:today()} : {from:ago(6),to:today()};
+function localSummary(D, logs){
+  const s=D.teamSummary, deps=D.dependencies, rep=D.alerts.filter(a=>a.type==='Repeated Blocker');
+  const wins=[]; logs.forEach(l=>{ if(l.wins) l.wins.split('\n').map(x=>x.replace(/^✔\s*/,'').trim()).filter(Boolean).forEach(w=>{ if(wins.length<4&&!wins.includes(w)) wins.push(l.employee.name.split(' ')[0]+': '+w); }); });
+  const sup=[]; logs.forEach(l=>{ const x=l.challenges&&l.challenges.needsSupport; if(x&&sup.length<3&&!sup.includes(x)) sup.push(l.employee.name.split(' ')[0]+' needs: '+x); });
+  const top=[...deps.slice(0,3).map(d=>d.suggestedAction+': "'+d.task+'" ('+d.waitingPerson+', blocked by '+d.blockedBy+')'),...sup].slice(0,5);
+  return {health:s.overallHealth==='Green'?'Green':s.overallHealth==='Critical'?'Red':'Yellow',score:Math.round(s.avgProductivityPct),
+    well:[`${s.tasksCompleted} of ${s.tasksAssigned} logged tasks completed (${s.completionPct}%).`,...wins],
+    attention:D.alerts.slice(0,4).map(a=>a.type+': '+a.detail),
+    tomorrow:deps.filter(d=>d.impactLevel==='High'||d.daysWaiting>=3).slice(0,4).map(d=>`Unblock "${d.task}" with ${d.blockedBy} (${d.daysWaiting}d waiting).`),
+    actions:top,
+    recurring:rep.length?rep.map(a=>a.detail).join(' '):(deps.length?'Blockers in this range look isolated: no single person or team is holding up more than one task.':'No open blockers in this range.')};
+}
+function logToDraft(l){ return JSON.parse(JSON.stringify(l)); }
+function blankDraft(){ const p=P(S.user); return {employee:{name:p.name,department:DEPT0[S.user]||'',role:p.role,date:today()},tasks:[blankTask()],newTasksForOthers:[],wins:'',challenges:{slowedDown:'',needsSupport:''},learnings:{learned:'',processImprovement:''},tomorrowPlan:''}; }
+function myLog(date){ const n=P(S.user).name.toLowerCase(); return S.logs.find(l=>l.employee.name.toLowerCase()===n&&l.employee.date===date); }
+function draft(){ if(!S.drafts[S.user]){ const ex=myLog(today()); S.drafts[S.user]=ex?logToDraft(ex):blankDraft(); } return S.drafts[S.user]; }
+function setPath(o,path,val){ const k=path.split('.'); let c=o; for(let i=0;i<k.length-1;i++) c=c[k[i]]; c[k[k.length-1]]=val; }
+function submitLog(){
+  const d=draft(), p=P(S.user);
+  if(!d.employee.department||!d.employee.date) return toast('Choose your department and the date.');
+  const tasks=d.tasks.filter(t=>t.taskName.trim());
+  if(!tasks.length) return toast('Add at least one task.');
+  const bad=tasks.find(t=>t.blocked&&!t.blockedBy.trim()); if(bad) return toast('Say who is blocking "'+bad.taskName+'".');
+  const log=JSON.parse(JSON.stringify(d)); log.tasks=tasks; log.newTasksForOthers=d.newTasksForOthers.filter(t=>t.task.trim()||t.assignedTo.trim());
+  log.employee.name=p.name; log.employee.role=p.role; log.submittedAt=Date.now();
+  const i=S.logs.findIndex(l=>l.employee.name.toLowerCase()===p.name.toLowerCase()&&l.employee.date===log.employee.date);
+  if(i>=0){ log.id=S.logs[i].id; S.logs[i]=log; } else { log.id='l'+(++S.seq); S.logs.push(log); }
+  S.drafts[S.user]=logToDraft(log); S.exec=null;
+  toast('Saved. '+tasks.length+' task(s) logged for '+log.employee.date+(i>=0?' (replaced your earlier log).':'.')); render();
+}
+function fillFromTimer(){
+  const d=draft(), t0=new Date(); t0.setHours(0,0,0,0);
+  const E=allEntries().filter(e=>e.person===S.user&&e.start>=t0.getTime());
+  if(!E.length) return toast('No time tracked today yet. Start a timer on the Time screen first.');
+  const by={}; E.forEach(e=>{ by[e.task]=(by[e.task]||0)+emin(e); });
+  const CAT={clarityos:'Product — ClarityOS',ally:'Product — GoXL Ally',wie:'Engineering / Dev',site:'Content & Marketing'};
+  const have=d.tasks.map(t=>t.taskName.trim().toLowerCase());
+  const rows=Object.entries(by).filter(([id])=>!have.includes(T(id).title.toLowerCase())).map(([id,m])=>{ const t=T(id), od=openDeps(t);
+    return Object.assign(blankTask(),{taskName:t.title,category:CAT[t.project],priority:(t.priority==='urgent'||t.priority==='high')?'High':t.priority==='low'?'Low':'Medium',plannedTime:t.est+'h',actualTime:(Math.round(m/6)/10)+'h',status:t.status==='done'?'Completed':t.status==='doing'?'In Progress':'Not Started',percentComplete:String(t.status==='done'?100:Math.min(95,Math.round(m/60/t.est*100))),blocked:od.length>0,blockedBy:od.length?P(od[0].who).name:'',blockReason:od.length?'Waiting on "'+od[0].title+'"':'',waitingSince:od.length?today():''}); });
+  d.tasks=d.tasks.filter(t=>t.taskName.trim()).concat(rows);
+  if(!d.tasks.length) d.tasks=[blankTask()];
+  toast(rows.length?rows.length+' task(s) added from your timer.':'Your tracked tasks are already in the log.'); render();
+}
+const fi = (path,val,label,o={}) => `<input id="f-${path.replace(/\./g,'-')}" type="${o.type||'text'}" data-f="${path}" value="${esc(val)}" placeholder="${esc(o.ph||'')}" aria-label="${esc(label)}" ${o.list?'list="'+o.list+'"':''} ${o.extra||''}>`;
+const fs = (path,val,opts,label) => `<select id="f-${path.replace(/\./g,'-')}" data-f="${path}" aria-label="${esc(label)}">${opts.map(o=>`<option value="${esc(o)}" ${o===val?'selected':''}>${o===''?'Select…':esc(o)}</option>`).join('')}</select>`;
+const ft = (path,val,label,ph) => `<textarea id="f-${path.replace(/\./g,'-')}" data-f="${path}" aria-label="${esc(label)}" placeholder="${esc(ph||'')}">${esc(val)}</textarea>`;
+function logTaskRow(t,i){
+  const k='tasks.'+i+'.';
+  return `<tr><td style="min-width:200px">${fi(k+'taskName',t.taskName,'Task name',{ph:'e.g. Client onboarding call'})}</td><td style="min-width:160px">${fs(k+'category',t.category,['',...LOG_CATS],'Category')}</td>
+    <td>${fs(k+'priority',t.priority,['High','Medium','Low'],'Priority')}</td><td style="width:80px">${fi(k+'plannedTime',t.plannedTime,'Planned time',{ph:'2h'})}</td><td style="width:80px">${fi(k+'actualTime',t.actualTime,'Actual time',{ph:'2h'})}</td>
+    <td style="min-width:120px">${fs(k+'status',t.status,['Not Started','In Progress','Waiting','Completed'],'Status')}</td><td style="width:70px">${fi(k+'percentComplete',t.percentComplete,'Percent complete',{type:'number',ph:'0',extra:'min="0" max="100"'})}</td>
+    <td style="min-width:150px">${fi(k+'deliverable',t.deliverable,'Deliverable',{ph:'Output'})}</td><td style="text-align:center"><input type="checkbox" data-f="${k}blocked" id="f-tasks-${i}-blocked" ${t.blocked?'checked':''} aria-label="Blocked"></td>
+    <td><button type="button" class="rm" data-act="rmlogtask" data-id="${i}" aria-label="Remove task row">✕</button></td></tr>
+    ${t.blocked?`<tr><td colspan="10" style="padding:0 6px 10px"><div class="blockpanel"><div class="fgrid fg4" style="margin-bottom:12px"><div><label>Blocked by</label>${fi(k+'blockedBy',t.blockedBy,'Blocked by',{list:'blockers',ph:'Person or party'})}</div><div><label>Impact level</label>${fs(k+'impactLevel',t.impactLevel,['Low','Medium','High'],'Impact level')}</div><div><label>Waiting since</label>${fi(k+'waitingSince',t.waitingSince,'Waiting since',{type:'date'})}</div><div><label>Expected resolution</label>${fi(k+'expectedResolution',t.expectedResolution,'Expected resolution',{type:'date'})}</div></div><div class="fgrid fg2" style="margin:0"><div><label>Reason</label>${fi(k+'blockReason',t.blockReason,'Reason',{ph:'Why is this blocked?'})}</div><div><label>Link or file (optional)</label>${fi(k+'link',t.link,'Link',{ph:'https://…'})}</div></div></div></td></tr>`:''}`;
+}
+views.log = () => {
+  const d=draft(), ex=myLog(d.employee.date), names=activeMembers().map(m=>m.name);
+  return `<p class="lead">Fill this in at the end of your day. It feeds the founder dashboard: tasks, blockers, wins and what you need. Takes under five minutes.</p>
+  <datalist id="blockers">${[...names,'Viraj (Founder)','Client','External Vendor','Legal / Compliance'].map(n=>`<option value="${esc(n)}"></option>`).join('')}</datalist>
+  ${ex?`<div class="health Green" style="font-weight:600">Your log for ${esc(d.employee.date)} is saved. Edit and submit again to replace it.</div>`:''}
+  <div class="stack">
+  <div class="card"><h2>Employee details</h2><div class="fgrid fg4" style="margin:0">
+    <div><label>Name</label><input type="text" value="${esc(P(S.user).name)}" disabled aria-label="Name"></div>
+    <div><label for="f-employee-department">Department</label>${fs('employee.department',d.employee.department,['',...DEPTS],'Department')}</div>
+    <div><label>Role</label><input type="text" value="${esc(P(S.user).role)}" disabled aria-label="Role"></div>
+    <div><label for="f-employee-date">Date</label>${fi('employee.date',d.employee.date,'Date',{type:'date'})}</div></div></div>
+  <div class="card"><h2>Today's tasks <button class="btn sm" data-act="logfill">Fill from my timer</button></h2>
+    <p class="muted" style="margin-top:-6px">Tick Blocked to open the dependency fields for that row.</p>
+    <div class="tablewrap"><table class="etable"><thead><tr><th>Task name</th><th>Category</th><th>Priority</th><th>Planned</th><th>Actual</th><th>Status</th><th>%</th><th>Deliverable</th><th>Blocked</th><th></th></tr></thead><tbody>${d.tasks.map(logTaskRow).join('')}</tbody></table></div>
+    <button class="btn" style="margin-top:10px" data-act="addlogtask">+ Add task row</button></div>
+  <div class="card"><h2>New tasks created for others</h2><p class="muted" style="margin-top:-6px">Only if today's work created work for someone else.</p>
+    ${d.newTasksForOthers.length?`<div class="tablewrap"><table class="etable"><thead><tr><th>Assigned to</th><th>Task</th><th>Priority</th><th>Deadline</th><th>Reason</th><th></th></tr></thead><tbody>${d.newTasksForOthers.map((n,i)=>{ const k='newTasksForOthers.'+i+'.'; return `<tr><td style="min-width:160px">${fi(k+'assignedTo',n.assignedTo,'Assigned to',{list:'blockers',ph:'Name'})}</td><td style="min-width:200px">${fi(k+'task',n.task,'Task',{ph:'Task'})}</td><td>${fs(k+'priority',n.priority,['High','Medium','Low'],'Priority')}</td><td style="width:150px">${fi(k+'deadline',n.deadline,'Deadline',{type:'date'})}</td><td style="min-width:180px">${fi(k+'reason',n.reason,'Reason',{ph:'Why this task exists'})}</td><td><button type="button" class="rm" data-act="rmnt" data-id="${i}" aria-label="Remove row">✕</button></td></tr>`; }).join('')}</tbody></table></div>`:''}
+    <button class="btn" style="margin-top:10px" data-act="addnt">+ Add row</button></div>
+  <div class="card"><h2>Wins</h2><label for="f-wins">Biggest wins of the day</label>${ft('wins',d.wins,'Wins','✔ Finished landing page\n✔ Closed client')}</div>
+  <div class="card"><h2>Challenges</h2><div class="fgrid fg2" style="margin:0"><div><label for="f-challenges-slowedDown">What slowed you down today?</label>${ft('challenges.slowedDown',d.challenges.slowedDown,'What slowed you down')}</div><div><label for="f-challenges-needsSupport">What needs founder support?</label>${ft('challenges.needsSupport',d.challenges.needsSupport,'What needs founder support')}</div></div></div>
+  <div class="card"><h2>Learnings</h2><div class="fgrid fg2" style="margin:0"><div><label for="f-learnings-learned">What did you learn today?</label>${ft('learnings.learned',d.learnings.learned,'What did you learn')}</div><div><label for="f-learnings-processImprovement">Any process improvement?</label>${ft('learnings.processImprovement',d.learnings.processImprovement,'Process improvement')}</div></div></div>
+  <div class="card"><h2>Tomorrow's plan</h2><label for="f-tomorrowPlan">List tomorrow's planned tasks</label>${ft('tomorrowPlan',d.tomorrowPlan,"Tomorrow's plan")}</div></div>
+  <div style="display:flex;gap:12px;align-items:center;margin-top:16px"><button class="btn pri" data-act="logsubmit">Submit daily log</button><button class="btn" data-act="logblank">Start blank</button></div>`;
+};
+const hPill = h => h==='High'?'<span class="chip bad">High</span>':h==='Medium'?'<span class="chip warn">Medium</span>':`<span class="chip">${esc(h||'—')}</span>`;
+const clip = (s,n) => !s?'—':(s.length>n?s.slice(0,n)+'…':s);
+views.founder = () => {
+  if(!can('founderDash')) return '<div class="card"><h2>No access</h2><p class="muted" style="margin:0">Your role cannot open the founder dashboard. Ask a Super Admin to change this.</p></div>';
+  const {from,to}=logRange(), logs=S.logs.filter(l=>l.employee.date>=from&&l.employee.date<=to), D=buildDash(logs), s=D.teamSummary, X=S.exec;
+  const stats=[['Contributors',s.totalContributors],['Tasks assigned',s.tasksAssigned],['Completed',s.tasksCompleted],['Pending',s.tasksPending],['In progress',s.tasksInProgress],['Blocked',s.blockedTasks],['Completion',s.completionPct+'%'],['Avg productivity',s.avgProductivityPct+'%'],['Hours worked',s.totalHoursWorked],['Hours lost to deps',s.hoursLost]];
+  const need=activeMembers().filter(m=>m.cap>=10), sub=need.filter(m=>myLogOf(m,today())), miss=need.filter(m=>!myLogOf(m,today()));
+  const hc=s.overallHealth==='Attention Needed'?'Attention':s.overallHealth;
+  const dist=D.distribution, cats=Object.entries(dist.categoryBreakdown).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${esc(k)} (${v})`).join(', ')||'—';
+  return `<p class="lead">Every contributor log, rolled up. Blockers, bottlenecks and where to spend your next hour of attention.</p>
+  <div class="toolbar"><label class="muted">Range <select id="frange"><option value="today" ${S.fRange==='today'?'selected':''}>Today</option><option value="week" ${S.fRange==='week'?'selected':''}>Last 7 days</option><option value="month" ${S.fRange==='month'?'selected':''}>Last 30 days</option></select></label>
+    <button class="btn pri" data-act="execsum">Generate executive summary</button><span class="mono muted">${from} → ${to} · ${logs.length} log(s)</span></div>
+  <div class="health ${hc}"><span>Overall team health: ${esc(s.overallHealth)}</span></div>
+  <div class="stack">
+  <div class="card"><h2>Log status today <small>${sub.length} of ${need.length} submitted</small></h2><div class="meta">${sub.map(m=>`<span class="chip good">${esc(m.name)}</span>`).join('')}${miss.map(m=>`<span class="chip warn">${esc(m.name)}: no log yet</span>`).join('')}</div></div>
+  <div class="card"><h2>Summary</h2><div class="stat-grid">${stats.map(([l,n])=>`<div class="stat"><div class="num">${n}</div><div class="lbl">${l}</div></div>`).join('')}</div></div>
+  <div class="card"><h2>Contributor dashboard</h2><div class="tablewrap"><table><thead><tr><th>Contributor</th><th class="r">Total</th><th class="r">Done</th><th class="r">Pending</th><th class="r">Blocked</th><th class="r">Hours</th><th class="r">Productivity</th><th>Achievement</th><th>Bottleneck</th><th>Support needed</th></tr></thead><tbody>
+    ${D.contributors.map(c=>`<tr><td><b>${esc(c.contributor)}</b><br><span class="muted" style="font-size:11.5px">${esc(c.role||'')}</span></td><td class="r">${c.totalTasks}</td><td class="r">${c.completed}</td><td class="r">${c.pending}</td><td class="r">${c.blocked}</td><td class="r mono">${c.hoursWorked}</td><td class="r mono">${c.productivityScore}%</td><td class="wrapc">${esc(clip(c.majorAchievement.replace(/\n/g,' '),90))}</td><td class="wrapc">${esc(clip(c.currentBottleneck,90))}</td><td class="wrapc">${esc(clip(c.supportNeeded,90))}</td></tr>`).join('')||'<tr><td colspan="10" class="muted">No logs in this range yet.</td></tr>'}</tbody></table></div></div>
+  <div class="card"><h2>Dependency dashboard <small>${D.dependencies.length} open</small></h2>${D.dependencies.length?`<div class="tablewrap"><table><thead><tr><th>Waiting person</th><th>Blocked by</th><th>Task</th><th>Days waiting</th><th>Priority</th><th>Impact</th><th>Suggested action</th></tr></thead><tbody>
+    ${D.dependencies.map(d=>`<tr><td>${esc(d.waitingPerson)}</td><td>${esc(d.blockedBy)}</td><td class="wrapc">${esc(d.task)}<br><span class="muted" style="font-size:11.5px">${esc(d.reason)}</span></td><td>${d.daysWaiting>=3?`<span class="chip bad">${d.daysWaiting}d</span>`:d.daysWaiting+'d'}</td><td>${hPill(d.priority)}</td><td>${hPill(d.impactLevel)}</td><td class="wrapc">${esc(d.suggestedAction)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted" style="margin:0">No open dependencies. Nobody is logged as blocked.</p>'}</div>
+  <div class="card"><h2>Task distribution</h2><div class="fgrid fg4"><div><label>Most tasks handled</label><b>${esc(dist.mostTasks)}</b></div><div><label>Least tasks handled</label><b>${esc(dist.leastTasks)}</b></div><div><label>Average delay (hrs)</label><b class="mono">${dist.averageDelayHours}</b></div><div><label>Most common category</label><b>${esc(dist.mostCommonCategory)}</b></div></div><label>Category breakdown</label><div class="muted">${cats}</div></div>
+  <div class="card"><h2>Founder alerts <small>${D.alerts.length}</small></h2>${D.alerts.length?D.alerts.map(a=>`<div class="alert-row ${/High|Missed/.test(a.type)?'high':''}"><b>${esc(a.type)}</b>${esc(a.detail)}</div>`).join(''):'<p class="muted" style="margin:0">No alerts for this range.</p>'}</div>
+  ${X?`<div class="card" id="execcard"><h2>Executive summary <small>Rule-based preview</small></h2><div class="health ${X.health==='Green'?'Green':X.health==='Red'?'Critical':'Attention'}">Operational health: ${X.health} · Productivity score: ${X.score}/100</div>
+    <div class="fgrid fg2"><div><label>What went well</label><ul class="sum-list">${X.well.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div><label>What requires attention</label><ul class="sum-list">${X.attention.map(x=>`<li>${esc(x)}</li>`).join('')||'<li>Nothing flagged.</li>'}</ul></div></div>
+    <div class="fgrid fg2"><div><label>Review tomorrow morning</label><ul class="sum-list">${X.tomorrow.map(x=>`<li>${esc(x)}</li>`).join('')||'<li>No urgent blockers.</li>'}</ul></div><div><label>Top action items</label><ul class="sum-list">${X.actions.map(x=>`<li>${esc(x)}</li>`).join('')||'<li>None.</li>'}</ul></div></div>
+    <label>Recurring dependency insight</label><p style="margin:4px 0 0">${esc(X.recurring)}</p>
+    <p class="note">This preview builds the summary from the numbers and the wins and support requests in the logs. The deployed engine asks Claude to write it from the same data.</p></div>`:''}
+  </div>`;
+};
+function myLogOf(m,date){ return S.logs.find(l=>l.employee.name.toLowerCase()===m.name.toLowerCase()&&l.employee.date===date); }
+
+views.dashboard = () => {
+  const E=allEntries(), total=E.reduce((a,e)=>a+emin(e),0);
+  const VT=visTasks(), done=VT.filter(t=>t.status==='done').length, doing=VT.filter(t=>t.status==='doing').length, bl=VT.filter(blocked);
+  const act=Object.entries(S.active);
+  return `<div class="grid g4">
+    <div class="card kpi"><b>${h(total)}</b><span>Logged this week, whole team</span></div>
+    <div class="card kpi"><b>${done}/${VT.length}</b><span>Tasks done</span></div>
+    <div class="card kpi"><b>${doing}</b><span>In progress now</span></div>
+    <div class="card kpi ${bl.length?'bad':''}"><b>${bl.length}</b><span>Blocked by a dependency</span></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h2>Working now <small>${act.length} of ${members().length} members</small></h2><div class="list">
+      ${act.map(([p,a])=>`<div class="li">${av(p)}<div class="grow"><div><b>${esc(P(p).name)}</b></div><div class="muted">${esc(T(a.task).title)}</div></div><span class="mono" data-elapsed="${p}">${clock(Date.now()-a.start)}</span></div>`).join('')}
+      ${members().filter(m=>!S.active[m.id]).map(m=>`<div class="li">${av(m.id)}<div class="grow"><div>${esc(m.name)}</div><div class="muted">${esc(m.role)}</div></div><span class="chip">Idle</span></div>`).join('')}
+    </div></div>
+    <div class="card"><h2>Waiting on a dependency <small>${bl.length} tasks</small></h2><div class="list">
+      ${bl.length ? bl.map(t=>`<div class="li">${av(t.who)}<div class="grow"><div><b>${esc(t.title)}</b></div><div class="muted">Waiting on ${openDeps(t).map(d=>esc(d.title)+' ('+esc(P(d.who).name.split(' ')[0])+')').join(', ')}</div></div><button class="btn sm" data-act="open" data-id="${t.id}">Open</button></div>`).join('') : '<p class="muted">Nothing is blocked.</p>'}
+    </div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h2>Contribution by project <small>hours logged against estimate</small></h2>${projectBars()}</div>
+  <p class="note">Preview with sample data. Timers run live; add dependencies and mark tasks done to see tasks unblock.</p>`;
+};
+
+function projectBars(){
+  const E=allEntries();
+  return visProjects().map(p=>{
+    const ts=S.tasks.filter(t=>t.project===p.id), est=ts.reduce((a,t)=>a+t.est,0), logged=E.filter(e=>T(e.task).project===p.id).reduce((a,e)=>a+emin(e),0)/60;
+    const pct=est>0?Math.min(100,logged/est*100):0;
+    return `<div class="li"><div class="grow"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(p.name)}</b><span class="muted mono">${logged.toFixed(1)}h of ${est}h est.</span></div><div class="bar" style="margin-top:6px"><span style="width:${pct}%;background:${p.c}"></span></div></div></div>`;
+  }).join('');
+}
+
+views.tasks = () => {
+  const list = visTasks().filter(t => (S.fPerson==='all'||t.who===S.fPerson) && (S.fProject==='all'||t.project===S.fProject) && (S.fPrio==='all'||t.priority===S.fPrio)).sort((a,b)=>PRIO[a.priority].o-PRIO[b.priority].o);
+  const cols = [['Blocked',t=>blocked(t)],['Ready',t=>t.status==='todo'&&!blocked(t)],['In progress',t=>t.status==='doing'],['Done',t=>t.status==='done']];
+  return `<div class="toolbar">
+    <label class="muted">Person <select id="fPerson"><option value="all">Everyone</option>${members().map(m=>`<option value="${m.id}" ${S.fPerson===m.id?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label>
+    <label class="muted">Project <select id="fProject"><option value="all">All projects</option>${visProjects().map(p=>`<option value="${p.id}" ${S.fProject===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label>
+    <label class="muted">Priority <select id="fPrio"><option value="all">All priorities</option>${Object.entries(PRIO).map(([k,v])=>`<option value="${k}" ${S.fPrio===k?'selected':''}>${v.n}</option>`).join('')}</select></label>
+    <span class="sp" style="display:flex;gap:8px;align-items:center">${can('addTask')?'':'<span class="muted">Your role cannot add tasks.</span>'}${can('uploadSheet')?'<button class="btn" data-act="sheet">Upload task sheet</button>':''}${can('addTask')?'<button class="btn pri" data-act="newtask">New task</button>':''}</span></div>
+  <div class="board">${cols.map(([name,f])=>{ const items=list.filter(f); return `<div class="col"><h3><span>${name}</span><span>${items.length}</span></h3>${items.map(card).join('') || '<div class="muted" style="padding:6px 4px">No tasks</div>'}</div>`; }).join('')}</div>`;
+};
+function card(t){
+  const od=openDeps(t), run=Object.values(S.active).some(a=>a.task===t.id);
+  return `<button class="tcard ${blocked(t)?'blocked':''} ${t.status==='doing'?'doing':''}" data-act="open" data-id="${t.id}">
+    <b>${esc(t.title)}</b>
+    <div class="meta">${prioChip(t.priority)}${projChip(t.project)}${t.due?`<span>Due ${esc(t.due.slice(5))}</span>`:''}${run?'<span class="chip acc">Timer running</span>':''}</div>
+    <div class="meta">${av(t.who)}<span>${esc(P(t.who).name.split(' ')[0])}</span><span class="mono">${h(taskMin(t.id))} / ${t.est}h</span>${t.deps.length?`<span title="Depends on ${t.deps.length}">⛓ ${t.deps.length}</span>`:''}</div>
+    ${od.length?`<div class="meta" style="color:var(--bad)">Waiting on ${esc(od[0].title)}${od.length>1?' +'+(od.length-1):''}</div>`:''}
+  </button>`;
+}
+
+views.time = () => {
+  const me=P(S.user), E=allEntries();
+  let mine='';
+  if (me.member){
+    const a=S.active[me.id], todays=E.filter(e=>e.person===me.id).sort((x,y)=>y.start-x.start).slice(0,8);
+    const todo=S.tasks.filter(t=>t.who===me.id && t.status!=='done').sort((a,b)=>PRIO[a.priority].o-PRIO[b.priority].o);
+    mine=`<div class="grid g2">
+      <div class="card"><h2>${esc(me.name)}: timer</h2>
+        ${a?`<div class="mono" style="font-size:36px" data-elapsed="${me.id}">${clock(Date.now()-a.start)}</div><p><b>${esc(T(a.task).title)}</b><br><span class="muted">Started ${tm(a.start)}. Ends automatically when you mark it done or start another task.</span></p>
+        <div style="display:flex;gap:8px"><button class="btn" data-act="stop">Pause timer</button><button class="btn pri" data-act="done" data-id="${a.task}">Mark done</button></div>`
+        :'<p class="muted">No timer running. Start one on a task below; the start time is saved for you.</p>'}
+      </div>
+      <div class="card"><h2>My tasks <small>${todo.length} open</small></h2><div class="list">${todo.map(t=>`<div class="li"><div class="grow"><div>${esc(t.title)}</div><div class="muted">${blocked(t)?'Blocked by '+esc(openDeps(t)[0].title):h(taskMin(t.id))+' of '+t.est+'h'}</div></div>${blocked(t)?'<span class="chip bad">Blocked</span>':`<button class="btn sm ${a&&a.task===t.id?'':'pri'}" data-act="start" data-id="${t.id}" ${a&&a.task===t.id?'disabled':''}>${a&&a.task===t.id?'Running':'Start'}</button>`}</div>`).join('') || '<p class="muted">No open tasks.</p>'}</div></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h2>My recent time entries</h2><div class="tablewrap"><table><thead><tr><th>Day</th><th>Task</th><th>Start</th><th>End</th><th class="r">Duration</th></tr></thead><tbody>
+      ${todays.map(e=>`<tr><td>${dayName(Math.min(6,Math.max(0,Math.floor((e.start-WEEK0)/DAY))))}</td><td>${esc(T(e.task).title)}</td><td>${tm(e.start)}</td><td>${e.live?'<span class="chip acc">running</span>':tm(e.end)}</td><td class="r">${h(emin(e))}</td></tr>`).join('')}</tbody></table></div></div>`;
+  } else mine=`<div class="card"><h2>Founder view</h2><p class="muted">Time tracking belongs to team members. Use "Viewing as" in the top bar to try a timer, or read the team timesheet below.</p></div>`;
+  return mine + `<div class="card" style="margin-top:16px"><h2>Team timesheet <small>hours per day, week of 16 Nov</small></h2><div class="tablewrap"><table><thead><tr><th>Member</th>${[0,1,2,3,4].map(i=>`<th class="r">${dayName(i)}</th>`).join('')}<th class="r">Total</th></tr></thead><tbody>
+    ${members().map(m=>{ const row=[0,1,2,3,4].map(i=>E.filter(e=>e.person===m.id&&Math.floor((e.start-WEEK0)/DAY)===i).reduce((a,e)=>a+emin(e),0)); return `<tr><td>${esc(m.name)}</td>${row.map(v=>`<td class="r">${v?h(v):'–'}</td>`).join('')}<td class="r"><b>${h(row.reduce((a,b)=>a+b,0))}</b></td></tr>`; }).join('')}</tbody></table></div></div>`;
+};
+
+views.projects = () => {
+  const E=allEntries();
+  const head=`<div class="toolbar"><span class="muted">${visProjects().length} project${visProjects().length===1?'':'s'}</span>${can('addProject')?'<button class="btn pri sp" data-act="newproject">New project</button>':''}</div>`;
+  if(!visProjects().length) return head+'<div class="card"><p class="muted" style="margin:0">You do not have access to any project yet.</p></div>';
+  return head+`<div class="grid">${visProjects().map(p=>{
+    const ts=S.tasks.filter(t=>t.project===p.id), done=ts.filter(t=>t.status==='done').length, est=ts.reduce((a,t)=>a+t.est,0);
+    const by=members().map(m=>({m,min:E.filter(e=>e.person===m.id&&T(e.task).project===p.id).reduce((a,e)=>a+emin(e),0)})).filter(x=>x.min>0).sort((a,b)=>b.min-a.min);
+    const sum=by.reduce((a,x)=>a+x.min,0)||1;
+    const pd=S.docs.filter(d=>d.project===p.id);
+    return `<div class="card"><h2><span>${esc(p.name)}</span><small>${done} of ${ts.length} tasks done · ${(sum===1?0:sum/60).toFixed(1)}h logged · ${est}h estimated</small></h2>
+      ${p.desc?`<p class="muted" style="margin:-4px 0 12px">${esc(p.desc)}</p>`:''}
+      ${leadRow(p)}
+      <div class="meta" style="margin-bottom:12px"><b style="color:var(--ink)">Documents (${pd.length})</b>${pd.slice(0,4).map(d=>`<button class="chip acc" style="border:0;cursor:pointer" data-act="gotodoc" data-id="${d.id}">${esc(d.name)}</button>`).join('')}${can('uploadDoc')?`<label class="btn sm" for="up-${p.id}" style="cursor:pointer">Upload document</label><input id="up-${p.id}" data-up="${p.id}" type="file" multiple hidden>`:''}</div>
+      <div class="bar" style="height:14px">${by.map(x=>`<span title="${esc(x.m.name)} ${h(x.min)}" style="width:${x.min/sum*100}%;background:${x.m.c}"></span>`).join('')}</div>
+      <div class="legend">${by.map(x=>`<span><i class="dot" style="display:inline-block;background:${x.m.c};margin-right:6px"></i>${esc(x.m.name)} ${h(x.min)}</span>`).join('') || 'No time logged yet'}</div>
+      <div class="list" style="margin-top:10px">${ts.length?'':'<p class="muted" style="margin:0">No tasks yet. Add one from the Tasks screen.</p>'}${ts.map(t=>`<div class="li">${av(t.who)}<div class="grow"><div>${esc(t.title)}</div></div><span class="muted mono">${h(taskMin(t.id))} / ${t.est}h</span>${prioChip(t.priority)}${statusChip(t)}<button class="btn sm" data-act="open" data-id="${t.id}">Open</button></div>`).join('')}</div></div>`;
+  }).join('')}</div>`;
+};
+
+function filteredDocs(){ return S.docs.filter(d => visIds().includes(d.project) && (S.docProj==='all'||d.project===S.docProj) &&d.name.toLowerCase().includes(S.docQ.toLowerCase())); }
+function docList(){ return filteredDocs().map(d=>`<button class="docrow" data-act="doc" data-id="${d.id}" aria-current="${S.docSel===d.id}"><span class="ext">${esc(d.type.slice(0,4).toUpperCase())}</span><span><b>${esc(d.name)}</b><br><span class="muted">${esc(PR(d.project).name)} · ${esc(P(d.owner).name.split(' ')[0])} · ${esc(d.upd)}</span></span></button>`).join('') || '<p class="muted" style="padding:8px">No documents match.</p>'; }
+function docPreview(){
+  const d=S.docs.find(x=>x.id===S.docSel); if(!d) return '<div class="paper muted">Select a document to preview it.</div>';
+  const blocks=d.body.split('\n\n').map(b=> b.startsWith('- ') ? '<ul>'+b.split('\n').map(l=>'<li>'+esc(l.slice(2))+'</li>').join('')+'</ul>' : '<p>'+esc(b)+'</p>').join('');
+  return `<div class="paper"><div class="meta">${projChip(d.project)}<span class="chip">${esc(d.type)}</span></div><h2 style="margin-top:10px">${esc(d.name)}</h2><div class="muted">Owner ${esc(P(d.owner).name)} · updated ${esc(d.upd)}</div>${blocks}</div>`;
+}
+views.docs = () => `<div class="toolbar"><input type="search" id="docQ" placeholder="Search documents" value="${esc(S.docQ)}" aria-label="Search documents">
+  <select id="docProj" aria-label="Project"><option value="all">All projects</option>${visProjects().map(p=>`<option value="${p.id}" ${S.docProj===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
+  ${can('uploadDoc')?'<label class="btn pri sp" for="upload" style="cursor:pointer">Upload document</label><input id="upload" type="file" accept=".txt,.md,.csv,.pdf,.docx" hidden>':'<span class="sp muted">Your role cannot upload documents.</span>'}</div>
+  <div class="docs"><div class="card" style="padding:8px"><div id="doclist">${docList()}</div></div><div id="docprev">${docPreview()}</div></div>
+  <p class="note">One shared library for every project. Text and Markdown files preview here; other types are stored with a placeholder in this prototype.</p>`;
+
+function weekStats(){
+  const E=allEntries();
+  const perDay=[0,1,2,3,4].map(i=>projects.map(p=>E.filter(e=>Math.floor((e.start-WEEK0)/DAY)===i&&T(e.task).project===p.id).reduce((a,e)=>a+emin(e),0)));
+  return {E, perDay, total:E.reduce((a,e)=>a+emin(e),0)};
+}
+function reportText(){
+  const {E,total}=weekStats(), bl=S.tasks.filter(blocked);
+  return ['GoXL weekly report, week of 16 Nov 2026','',
+   `Hours logged: ${h(total)}   Tasks done: ${S.tasks.filter(t=>t.status==='done').length}/${S.tasks.length}   Blocked: ${bl.length}`,'','By project:',
+   ...projects.map(p=>`- ${p.name}: ${h(E.filter(e=>T(e.task).project===p.id).reduce((a,e)=>a+emin(e),0))}`),'','By member:',
+   ...members().map(m=>`- ${m.name}: ${h(E.filter(e=>e.person===m.id).reduce((a,e)=>a+emin(e),0))}`),'','Blocked:',
+   ...(bl.length?bl.map(t=>`- ${t.title} (waiting on ${openDeps(t).map(d=>d.title).join(', ')})`):['- none'])].join('\n');
+}
+views.reports = () => {
+  if(!can('viewReports')) return '<div class="card"><h2>No access</h2><p class="muted" style="margin:0">Your role cannot view reports. Ask a Super Admin to change this.</p></div>';
+  const {E,perDay,total}=weekStats();
+  const tabs=`<div class="toolbar"><div style="display:flex;gap:6px"><button class="btn ${S.reportTab==='weekly'?'pri':''}" data-act="rtab" data-id="weekly">Weekly report</button><button class="btn ${S.reportTab==='team'?'pri':''}" data-act="rtab" data-id="team">Team report</button></div><button class="btn sp" data-act="copyreport">Copy report text</button></div>`;
+  if (S.reportTab==='team'){
+    return tabs+`<div class="grid g3">${members().map(m=>{
+      const min=E.filter(e=>e.person===m.id).reduce((a,e)=>a+emin(e),0), done=S.tasks.filter(t=>t.who===m.id&&t.status==='done').length, open=S.tasks.filter(t=>t.who===m.id&&t.status!=='done').length;
+      const a=S.active[m.id], util=Math.round(min/60/m.cap*100);
+      return `<div class="card"><div class="li" style="border:0;padding-top:0">${av(m.id)}<div class="grow"><b>${esc(m.name)}</b><div class="muted">${esc(m.role)}</div></div></div>
+        <div class="kpi"><b>${h(min)}</b><span>${m.cap}h weekly capacity · ${util}% used so far</span></div>
+        <div class="bar" style="margin:10px 0"><span style="width:${Math.min(100,util)}%;background:${m.c}"></span></div>
+        <div class="meta"><span>${done} done</span><span>${open} open</span></div>
+        <p class="muted" style="margin:8px 0 0">${a?'Now: '+esc(T(a.task).title):'Not tracking right now'}</p></div>`;
+    }).join('')}</div>`;
+  }
+  const max=Math.max(1,...perDay.map(d=>d.reduce((a,b)=>a+b,0)/60));
+  return tabs+`<div class="grid g4">
+    <div class="card kpi"><b>${h(total)}</b><span>Hours logged</span></div>
+    <div class="card kpi"><b>${S.tasks.filter(t=>t.status==='done').length}</b><span>Tasks completed</span></div>
+    <div class="card kpi"><b>${S.tasks.filter(t=>t.status==='doing').length}</b><span>In progress</span></div>
+    <div class="card kpi ${S.tasks.some(blocked)?'bad':''}"><b>${S.tasks.filter(blocked).length}</b><span>Blocked</span></div></div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h2>Hours per day by project <small>Mon to Fri, 16 to 20 Nov</small></h2>
+      <div class="chart">${perDay.map(d=>{ const tot=d.reduce((a,b)=>a+b,0)/60; return `<div class="d"><span class="v">${tot?tot.toFixed(1):''}</span><div class="stack" style="height:${tot/max*150}px">${d.map((v,i)=>`<span style="height:${tot?v/60/tot*100:0}%;background:${projects[i].c}" title="${esc(projects[i].name)} ${h(v)}"></span>`).join('')}</div></div>`; }).join('')}</div>
+      <div class="xl">${[0,1,2,3,4].map(i=>`<span>${dayName(i)}</span>`).join('')}</div>
+      <div class="legend">${projects.map(p=>`<span><i class="dot" style="display:inline-block;background:${p.c};margin-right:6px"></i>${esc(p.name)}</span>`).join('')}</div></div>
+    <div class="card"><h2>Hours by member</h2><div class="list">${members().map(m=>{ const min=E.filter(e=>e.person===m.id).reduce((a,e)=>a+emin(e),0); return `<div class="li">${av(m.id)}<div class="grow"><div style="display:flex;justify-content:space-between"><span>${esc(m.name)}</span><span class="mono">${h(min)}</span></div><div class="bar" style="margin-top:5px"><span style="width:${Math.min(100,min/60/m.cap*100)}%;background:${m.c}"></span></div></div></div>`; }).join('')}</div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h2>Needs attention</h2>${S.tasks.filter(blocked).map(t=>`<div class="li"><div class="grow"><b>${esc(t.title)}</b><div class="muted">${esc(P(t.who).name)} is waiting on ${openDeps(t).map(d=>esc(d.title)+' ('+esc(P(d.who).name.split(' ')[0])+')').join(', ')}</div></div></div>`).join('') || '<p class="muted">No blocked tasks.</p>'}</div>`;
+};
+
+function msgList(){
+  const ms=S.msgs.filter(m=>m.ch===S.channel);
+  return ms.map(m=>`<div class="msg">${av(m.who)}<div><b>${esc(P(m.who).name)}</b><span class="t">${esc(m.t)}</span><p>${esc(m.x)}</p></div></div>`).join('') || '<p class="muted">No messages yet.</p>';
+}
+views.chat = () => `<div class="chat"><div class="card chans" style="padding:8px">${visChannels().map(([id,n])=>`<button data-act="chan" data-id="${id}" aria-current="${S.channel===id}"># ${esc(n)}</button>`).join('')}</div>
+  <div class="card room"><div class="msgs" id="msgs">${msgList()}</div><div class="compose"><input type="text" id="msgIn" placeholder="Message #${esc(S.channel)}" aria-label="Message"><button class="btn pri" data-act="send">Send</button></div></div></div>`;
+
+/* ---------- Shell ---------- */
+const NAV=[['dashboard','Overview'],['tasks','Tasks'],['time','Time'],['projects','Projects'],['log','Daily log'],['founder','Founder dashboard'],['docs','Docs'],['reports','Reports'],['chat','Team chat'],['admin','Admin']];
+const TITLE={dashboard:'Team overview',tasks:'Task board',time:'Time tracking',projects:'Project contribution',docs:'Document manager',reports:'Reports',chat:'Team chat',admin:'Super admin panel',log:'Daily log',founder:'Founder dashboard'};
+function renderSide(){
+  const me=P(S.user), bl=S.tasks.filter(blocked).length;
+  $('#side').innerHTML=`<div class="brand"><svg width="30" height="30" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GoXL logomark"><rect width="34" height="34" rx="7" fill="#0F2A1E"/><line x1="9" y1="22" x2="17" y2="15" stroke="#C8E600" stroke-width="1.6"/><line x1="17" y1="15" x2="25" y2="10" stroke="#C8E600" stroke-width="1.6"/><circle cx="9" cy="22" r="2.4" fill="none" stroke="#C8E600" stroke-width="1.4"/><circle cx="17" cy="15" r="3" fill="none" stroke="#C8E600" stroke-width="1.4"/><circle cx="25" cy="10" r="3.6" fill="#C8E600"/></svg><div><b>GoXL</b><span>Team Hub</span></div></div>`
+   + NAV.filter(navOk).map(([id,n])=>`<button class="nav" data-act="nav" data-id="${id}" ${S.view===id?'aria-current="page"':''}><span>${n}</span>${id==='tasks'&&bl?`<span class="n">${bl}</span>`:''}</button>`).join('')
+   + `<div class="me"><div class="row">${av(me.id)}<div><b>${esc(me.name)}</b><small>${esc(me.role)}<br><b>${ROLES[me.rk]}</b></small></div></div><small>Signed in. Stays signed in on this device.</small><button class="btn sm" data-act="signout">Sign out</button></div>`;
+}
+function renderTop(){
+  const a=S.active[S.user];
+  $('#top').innerHTML=`<h1>${TITLE[S.view]}</h1>${a?`<span class="pill run"><span class="dot"></span>${esc(T(a.task).title)} <b class="mono" data-elapsed="${S.user}">${clock(Date.now()-a.start)}</b></span>`:''}
+   <label>Viewing as <select id="who">${people.filter(p=>p.on).map(p=>`<option value="${p.id}" ${p.id===S.user?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label>`;
+}
+function renderDrawer(){
+  const o=$('#overlay'); if(S.open===null){ o.innerHTML=''; return; }
+  if (S.open==='sheet'){ o.innerHTML=sheetHTML(); return; }
+  if (S.open==='newproject'){
+    o.innerHTML=`<div class="shade" data-act="close"><div class="drawer"><div style="display:flex;justify-content:space-between;gap:12px"><h2>New project</h2><button class="btn sm" data-act="close">Close</button></div>
+      <label class="field">Project name<input type="text" id="npName" placeholder="For example, Client portal"></label>
+      <label class="field">What is it? (optional)<input type="text" id="npDesc" placeholder="One line"></label>
+      <div class="field">Documents (optional)<label class="btn" for="npFiles" style="cursor:pointer;align-self:flex-start">Choose files</label><input id="npFiles" type="file" multiple hidden><span id="npFileList" style="font-weight:400">No files chosen</span></div>
+      <button class="btn pri" data-act="createproject" style="align-self:flex-start">Create project</button>
+      <p class="muted" style="margin:0">You get access to the new project. Add tasks from the Tasks screen and give teammates access in Admin.</p></div></div>`;
+    setTimeout(()=>{const x=$('#npName'); x&&x.focus();},0); return;
+  }
+  if (S.open==='new'){
+    o.innerHTML=`<div class="shade" data-act="close"><form class="drawer" id="newform"><h2>New task</h2>
+      <label class="field">Title<input type="text" id="nt" required placeholder="What needs doing?"></label>
+      <div class="row2"><label class="field">Project<select id="np">${visProjects().map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></label>
+      <label class="field">Assignee<select id="nw">${activeMembers().map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select></label></div>
+      <div class="row2"><label class="field">Estimate (hours)<input type="number" id="ne" min="0.5" step="0.5" value="4"></label>
+      <label class="field">Priority<select id="npr">${Object.entries(PRIO).map(([k,v])=>`<option value="${k}" ${k==='medium'?'selected':''}>${v.n}</option>`).join('')}</select></label></div>
+      <label class="field">Due date (optional)<input type="date" id="nd"></label>
+      <div style="display:flex;gap:8px"><button class="btn pri" type="submit">Create task</button><button class="btn" type="button" data-act="close">Cancel</button></div>
+      <p class="muted">Add dependencies after creating the task.</p></form></div>`;
+    setTimeout(()=>{const x=$('#nt'); x&&x.focus();},0); return;
+  }
+  const t=T(S.open), dependents=S.tasks.filter(x=>x.deps.includes(t.id)), mine=S.active[S.user]&&S.active[S.user].task===t.id;
+  const cands=S.tasks.filter(x=>x.id!==t.id && !t.deps.includes(x.id) && !reaches(x.id,t.id));
+  const ents=allEntries().filter(e=>e.task===t.id).sort((a,b)=>b.start-a.start).slice(0,6);
+  o.innerHTML=`<div class="shade" data-act="close"><div class="drawer">
+    <div style="display:flex;justify-content:space-between;gap:12px"><div><div class="meta">${projChip(t.project)} ${statusChip(t)}</div><h2 style="margin-top:8px">${esc(t.title)}</h2></div><button class="btn sm" data-act="close" aria-label="Close">Close</button></div>
+    <div class="row2"><label class="field">Priority${can('setPriority')?`<select id="prioSel">${Object.entries(PRIO).map(([k,v])=>`<option value="${k}" ${t.priority===k?'selected':''}>${v.n}</option>`).join('')}</select>`:`<span>${prioChip(t.priority)}</span>`}</label>
+      <label class="field">Due date<input type="date" id="dueSel" value="${esc(t.due||'')}" ${can('setPriority')?'':'disabled'}></label></div>
+    <div class="row2"><label class="field">Assignee<select id="assign" ${can('reassign')?'':'disabled'}>${activeMembers().concat(members().filter(m=>!m.on&&m.id===t.who)).map(m=>`<option value="${m.id}" ${m.id===t.who?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label>
+      <div class="field">Time logged<b class="mono" style="font-size:18px;color:var(--ink)">${h(taskMin(t.id))} <span class="muted" style="font-size:12px">of ${t.est}h</span></b></div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${t.status!=='done'?`<button class="btn pri" data-act="start" data-id="${t.id}" ${mine?'disabled':''}>${mine?'Timer running':'Start my timer'}</button><button class="btn" data-act="done" data-id="${t.id}">Mark done</button>`:'<span class="chip good">Completed</span>'}
+    </div>
+    <div class="sec"><h3>Depends on</h3>${t.deps.length?t.deps.map(id=>{const d=T(id);return `<div class="li">${av(d.who)}<div class="grow"><div>${esc(d.title)}</div><div class="muted">${esc(P(d.who).name)}</div></div>${statusChip(d)}<button class="btn sm danger" data-act="rmdep" data-id="${d.id}" aria-label="Remove dependency">Remove</button></div>`;}).join(''):'<p class="muted" style="margin:0">No dependencies.</p>'}
+      <div style="display:flex;gap:8px"><select id="depSel" style="flex:1" aria-label="Add dependency"><option value="">Add a task this one waits on…</option>${cands.map(x=>`<option value="${x.id}">${esc(x.title)} (${esc(P(x.who).name.split(' ')[0])})</option>`).join('')}</select><button class="btn" data-act="adddep">Add</button></div></div>
+    <div class="sec"><h3>Unblocks</h3>${dependents.length?dependents.map(d=>`<div class="li">${av(d.who)}<div class="grow">${esc(d.title)}</div>${statusChip(d)}</div>`).join(''):'<p class="muted" style="margin:0">Nothing waits on this task.</p>'}</div>
+    <div class="sec"><h3>Time entries</h3>${ents.length?ents.map(e=>`<div class="li">${av(e.person)}<div class="grow">${dayName(Math.min(6,Math.max(0,Math.floor((e.start-WEEK0)/DAY))))} ${tm(e.start)} to ${e.live?'now':tm(e.end)}</div><span class="mono">${h(emin(e))}</span></div>`).join(''):'<p class="muted" style="margin:0">No time logged yet.</p>'}</div>
+  </div></div>`;
+}
+function render(){ if(!navOk([S.view])) S.view='dashboard'; if(!visChannels().some(c=>c[0]===S.channel)) S.channel='general'; renderSide(); renderTop(); const m=$('#main'); m.innerHTML=views[S.view](); renderDrawer(); if(S.view==='chat'){const b=$('#msgs'); b&&(b.scrollTop=b.scrollHeight);} }
+
+/* ---------- Sign-in (session is remembered when storage is available) ---------- */
+function showSignin(){
+  $('#overlay').innerHTML=`<div class="signin"><div class="card"><h2>Sign in to GoXL Team Hub</h2><p class="muted" style="margin:0">Choose who you are. In the real platform this is email sign-in; the session stays active until you sign out.</p>
+   ${people.filter(p=>p.on).map(p=>`<button class="who" data-act="login" data-id="${p.id}">${av(p.id)}<span><b>${esc(p.name)}</b><br><span class="muted">${esc(p.role)}</span></span></button>`).join('')}
+   <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="keep" checked> Keep me signed in</label></div></div>`;
+}
+try{ const u=localStorage.getItem('goxl_user'); if(u && P(u)) S.user=u; }catch(e){}
+
+/* ---------- Events ---------- */
+document.addEventListener('click', e=>{
+  const el=e.target.closest('[data-act]'); if(!el) return;
+  const a=el.dataset.act, id=el.dataset.id;
+  if(a==='close'){ if(e.target!==el && el.classList.contains('shade')) return; S.open=null; renderDrawer(); }
+  else if(a==='nav'){ S.view=id; S.open=null; render(); }
+  else if(a==='open'){ S.open=id; renderDrawer(); }
+  else if(a==='newtask'){ if(!can('addTask')) return toast('Your role cannot add tasks.'); S.open='new'; renderDrawer(); }
+  else if(a==='newproject'){ if(!can('addProject')) return toast('Your role cannot create projects.'); S.open='newproject'; S.npFiles=[]; renderDrawer(); }
+  else if(a==='createproject'){ createProject(); }
+  else if(a==='leadsuggest'){ const v=$('#lead-'+id).value; if(!v) return toast('Choose someone to suggest.'); suggestLead(id,v); }
+  else if(a==='leadok'){ decideLead(id,true); }
+  else if(a==='leadno'){ decideLead(id,false); }
+  else if(a==='gotodoc'){ S.docSel=id; S.docProj='all'; S.docQ=''; S.view='docs'; S.open=null; render(); }
+  else if(a==='sheet'){ if(!can('uploadSheet')) return toast('Your role cannot upload task sheets.'); S.open='sheet'; renderDrawer(); }
+  else if(a==='sheetexample'){ S.sheetText=SHEET_EX; S.sheetRows=null; renderDrawer(); }
+  else if(a==='sheetparse'){ S.sheetText=$('#sheetText').value; S.sheetRows=checkSheet(S.sheetText); renderDrawer(); }
+  else if(a==='sheetimport'){ importSheet(); }
+  else if(a==='sheetcopy'){ try{ navigator.clipboard.writeText(SHEET_HEAD+'\n').then(()=>toast('Header row copied.'),()=>toast('Copy was blocked here.')); }catch(err){ toast('Copy was blocked here.'); } }
+  else if(a==='toggleon'){ toggleOn(id); }
+  else if(a==='addlogtask'){ draft().tasks.push(blankTask()); render(); }
+  else if(a==='rmlogtask'){ const d=draft(); d.tasks.splice(+id,1); if(!d.tasks.length) d.tasks.push(blankTask()); render(); }
+  else if(a==='addnt'){ draft().newTasksForOthers.push(blankNT()); render(); }
+  else if(a==='rmnt'){ draft().newTasksForOthers.splice(+id,1); render(); }
+  else if(a==='logfill'){ fillFromTimer(); }
+  else if(a==='logsubmit'){ submitLog(); }
+  else if(a==='logblank'){ S.drafts[S.user]=blankDraft(); toast('Started a blank log.'); render(); }
+  else if(a==='execsum'){ const r=logRange(); const logs=S.logs.filter(l=>l.employee.date>=r.from&&l.employee.date<=r.to); S.exec=localSummary(buildDash(logs),logs); render(); const c=$('#execcard'); if(c&&c.scrollIntoView) c.scrollIntoView({block:'start'}); }
+  else if(a==='invite'){ invite(); }
+  else if(a==='start'){ startTimer(S.user,id); }
+  else if(a==='stop'){ stopTimer(S.user); toast('Timer paused. Time saved.'); render(); }
+  else if(a==='done'){ markDone(id); }
+  else if(a==='adddep'){ addDep(S.open,$('#depSel').value); }
+  else if(a==='rmdep'){ const t=T(S.open); t.deps=t.deps.filter(x=>x!==id); toast('Dependency removed.'); render(); }
+  else if(a==='doc'){ S.docSel=id; $('#doclist').innerHTML=docList(); $('#docprev').innerHTML=docPreview(); }
+  else if(a==='rtab'){ S.reportTab=id; render(); }
+  else if(a==='chan'){ S.channel=id; render(); }
+  else if(a==='send'){ sendMsg(); }
+  else if(a==='copyreport'){ const txt=reportText(); try{ navigator.clipboard.writeText(txt).then(()=>toast('Report copied.'),()=>toast('Copy was blocked here.')); }catch(err){ toast('Copy was blocked here.'); } }
+  else if(a==='signout'){ try{localStorage.removeItem('goxl_user');}catch(e){} showSignin(); }
+  else if(a==='login'){ S.user=id; try{ if($('#keep').checked) localStorage.setItem('goxl_user',id); }catch(e){} $('#overlay').innerHTML=''; render(); }
+});
+document.addEventListener('change', e=>{
+  const id=e.target.id, d=e.target.dataset;
+  if(d.up){ [...e.target.files].forEach(f=>addDocFile(f,d.up)); e.target.value=''; return; }
+  if(d.role){ setRole(d.role,e.target.value); return; }
+  if(d.acc){ const [pid,pr]=d.acc.split(':'), p=P(pid); p.acc=e.target.checked?[...new Set(p.acc.concat(pr))]:p.acc.filter(x=>x!==pr); audit(p.name+(e.target.checked?' given access to ':' removed from ')+PR(pr).name); toast('Access updated for '+p.name+'.'); render(); return; }
+  if(d.perm){ const [r,k]=d.perm.split(':'); S.perms[r][k]=e.target.checked; audit(ROLES[r]+': '+PERMS.find(x=>x[0]===k)[1]+(e.target.checked?' allowed':' removed')); toast('Permission updated for '+ROLES[r]+'.'); render(); return; }
+  if(id==='prioSel'){ if(!can('setPriority')) return; const t=T(S.open); t.priority=e.target.value; audit('Priority of "'+t.title+'" set to '+PRIO[t.priority].n); toast('Priority set to '+PRIO[t.priority].n+'.'); render(); return; }
+  if(id==='dueSel'){ if(!can('setPriority')) return; T(S.open).due=e.target.value; render(); return; }
+  if(id==='fPrio'){ S.fPrio=e.target.value; render(); return; }
+  if(id==='sheetfile'){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ S.sheetText=String(r.result); S.sheetRows=checkSheet(S.sheetText); renderDrawer(); }; r.readAsText(f); return; }
+  if(id==='who'){ S.user=e.target.value; try{localStorage.setItem('goxl_user',S.user);}catch(x){} render(); }
+  else if(id==='fPerson'){ S.fPerson=e.target.value; render(); }
+  else if(id==='fProject'){ S.fProject=e.target.value; render(); }
+  else if(id==='docProj'){ S.docProj=e.target.value; $('#doclist').innerHTML=docList(); }
+  else if(id==='assign'){ T(S.open).who=e.target.value; toast('Reassigned to '+P(e.target.value).name+'.'); render(); }
+  else if(id==='upload'){
+    [...e.target.files].forEach(f=>addDocFile(f,S.docProj==='all'?visIds()[0]:S.docProj)); e.target.value='';
+  }
+  else if(id==='npFiles'){
+    S.npFiles=[...e.target.files]; const el=$('#npFileList'); if(el) el.textContent=S.npFiles.length?S.npFiles.map(f=>f.name).join(', '):'No files chosen';
+  }
+});
+document.addEventListener('input', e=>{
+  if(e.target.id==='docQ'){ S.docQ=e.target.value; $('#doclist').innerHTML=docList(); }
+  const f=e.target.dataset&&e.target.dataset.f; if(f) setPath(draft(),f,e.target.type==='checkbox'?e.target.checked:e.target.value);
+});
+document.addEventListener('change', e=>{
+  const f=e.target.dataset&&e.target.dataset.f;
+  if(f&&/\.blocked$/.test(f)){ setPath(draft(),f,e.target.checked); const m=$('#main'), st=m.scrollTop; m.innerHTML=views.log(); m.scrollTop=st; }
+  if(e.target.id==='frange'){ S.fRange=e.target.value; S.exec=null; render(); }
+});
+document.addEventListener('keydown', e=>{ if(e.target.id==='npName'&&e.key==='Enter'){ e.preventDefault(); createProject(); return; } if(e.target.id==='msgIn' && e.key==='Enter'){ e.preventDefault(); sendMsg(); } if(e.key==='Escape' && S.open!==null){ S.open=null; renderDrawer(); } });
+document.addEventListener('submit', e=>{
+  if(e.target.id==='newform'){ e.preventDefault();
+    const title=$('#nt').value.trim(); if(!title) return;
+    if(!can('addTask')) return toast('Your role cannot add tasks.');
+    const t={id:'t'+(++S.seq),title,project:$('#np').value,who:$('#nw').value,est:parseFloat($('#ne').value)||4,status:'todo',deps:[],priority:$('#npr').value,due:$('#nd').value};
+    S.tasks.push(t); audit('Added task "'+title+'" ('+PRIO[t.priority].n+')'); S.open=t.id; toast('Task created.'); render(); }
+});
+function sendMsg(){
+  const i=$('#msgIn'); const x=i.value.trim(); if(!x) return;
+  S.msgs.push({ch:S.channel,who:S.user,t:tm(Date.now()),x}); i.value='';
+  const b=$('#msgs'); b.innerHTML=msgList(); b.scrollTop=b.scrollHeight;
+}
+setInterval(()=>{ document.querySelectorAll('[data-elapsed]').forEach(el=>{ const a=S.active[el.dataset.elapsed]; if(a) el.textContent=clock(Date.now()-a.start); }); },1000);
+render();
+</script>
+</body>
+</html>
