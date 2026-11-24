@@ -1,6 +1,6 @@
 # AI assistant: audit and integration plan
 
-Status: **proposal for review.** Nothing in `team/` or `supabase/` has been changed. This document is the only new file.
+Status: **approved in principle; Phase 0 complete, Phase 1 not started.** Confirmed decisions and added requirements are recorded in `docs/PHASE0_RESULTS.md`.
 
 Goal: every signed-in person gets a personal assistant that can read what they are allowed to read, act where they are allowed to act, and never exceed that.
 

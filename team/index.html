@@ -204,10 +204,13 @@ td.wrapc{white-space:normal;min-width:160px;max-width:240px}
 <div id="overlay"></div>
 <div id="toast"></div>
 
+<script src="/team/config.js"></script>
 <script>
 /* ---------- Sample data (clearly demo content) ---------- */
 const MIN = 60000, DAY = 864e5;
-const WEEK0 = new Date(2026, 10, 16, 0, 0, 0, 0).getTime(); // Monday 16 Nov 2026
+// LIVE is true when team/config.js names a Supabase project. Otherwise this page runs as the demo with sample data.
+const LIVE = !!(window.GOXL_CONFIG && window.GOXL_CONFIG.supabaseUrl && window.GOXL_CONFIG.supabaseKey);
+let WEEK0 = new Date(2026, 10, 16, 0, 0, 0, 0).getTime(); // Monday 16 Nov 2026 in the demo; Monday of the current week when LIVE
 const people = [
   {id:'viraj',   name:'Viraj',          role:'Founder & CEO',            cap:0,  member:false, c:'var(--c7)'},
   {id:'sumit',   name:'Sumit Suman',    role:'Project Manager',          cap:40, member:true,  c:'var(--c1)'},
@@ -309,13 +312,14 @@ Object.assign(S, {
 /* ---------- Helpers ---------- */
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const $ = (s, r=document) => r.querySelector(s);
-const P = id => people.find(p => p.id === id);
+const NOBODY = {id:'',name:'Unassigned',role:'',cap:0,member:false,c:'var(--c7)',rk:'member',on:false,acc:[]};
+const P = id => people.find(p => p.id === id) || NOBODY;
 const T = id => S.tasks.find(t => t.id === id);
 const PR = id => projects.find(p => p.id === id);
 const members = () => people.filter(p => p.member);
 const activeMembers = () => people.filter(p => p.member && p.on);
 const can = (perm, uid=S.user) => !!(S.perms[P(uid).rk] && S.perms[P(uid).rk][perm]);
-const visIds = (uid=S.user) => ['super_admin','founder'].includes(P(uid).rk) ? projects.map(p=>p.id) : P(uid).acc;
+const visIds = (uid=S.user) => ((LIVE && uid===S.user) || ['super_admin','founder'].includes(P(uid).rk)) ? projects.map(p=>p.id) : P(uid).acc;
 const visProjects = () => projects.filter(p => visIds().includes(p.id));
 const visTasks = () => S.tasks.filter(t => visIds().includes(t.project));
 const visChannels = () => S.channels.filter(c => !c[2] || visIds().includes(c[2]));
@@ -337,7 +341,28 @@ const reaches = (from, target) => { const seen = new Set(); const go = id => { i
 
 function toast(msg){ const el=$('#toast'); el.innerHTML = `<div class="toast" role="status">${esc(msg)}</div>`; clearTimeout(toast.t); toast.t=setTimeout(()=>el.innerHTML='',3200); }
 
+/* ---------- Week helpers: the demo is pinned to its sample week; LIVE uses the current week ---------- */
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dMon = ms => { const d=new Date(ms); return d.getDate()+' '+MON[d.getMonth()]; };
+const weekOf = () => dMon(WEEK0);
+const weekRange = () => new Date(WEEK0).getMonth()===new Date(WEEK0+4*DAY).getMonth() ? new Date(WEEK0).getDate()+' to '+dMon(WEEK0+4*DAY) : dMon(WEEK0)+' to '+dMon(WEEK0+4*DAY);
+const weekEntries = () => LIVE ? allEntries().filter(e => e.start>=WEEK0 && e.start<WEEK0+7*DAY) : allEntries();
+const dayLbl = ms => LIVE ? new Date(ms).toLocaleDateString([], {weekday:'short',day:'numeric',month:'short'}) : dayName(Math.min(6,Math.max(0,Math.floor((ms-WEEK0)/DAY))));
+// Who a task in this project can be assigned to. LIVE: active people who can see the project (the database enforces the same rule).
+const assignable = pid => LIVE ? people.filter(p => p.on && visIds(p.id).includes(pid)) : activeMembers();
+
 /* ---------- Actions ---------- */
+/* Every change goes through a named function. In LIVE mode team/backend.js replaces each one with a database call. */
+function pauseTimer(){ stopTimer(S.user); toast('Timer paused. Time saved.'); render(); }
+function removeDep(tid, did){ const t=T(tid); t.deps=t.deps.filter(x=>x!==did); toast('Dependency removed.'); render(); }
+function setPriority(tid, v){ const t=T(tid); t.priority=v; audit('Priority of "'+t.title+'" set to '+PRIO[v].n); toast('Priority set to '+PRIO[v].n+'.'); render(); }
+function setDue(tid, v){ T(tid).due=v; render(); }
+function assignTask(tid, pid){ T(tid).who=pid; toast('Reassigned to '+P(pid).name+'.'); render(); }
+function createTask(f){ const t={id:'t'+(++S.seq),title:f.title,project:f.project,who:f.who,est:f.est,status:'todo',deps:[],priority:f.priority,due:f.due}; S.tasks.push(t); audit('Added task "'+t.title+'" ('+PRIO[t.priority].n+')'); S.open=t.id; toast('Task created.'); render(); }
+function setAccess(pid, pr, on){ const p=P(pid); p.acc=on?[...new Set(p.acc.concat(pr))]:p.acc.filter(x=>x!==pr); audit(p.name+(on?' given access to ':' removed from ')+PR(pr).name); toast('Access updated for '+p.name+'.'); render(); }
+function setPerm(r, k, on){ S.perms[r][k]=on; audit(ROLES[r]+': '+PERMS.find(x=>x[0]===k)[1]+(on?' allowed':' removed')); toast('Permission updated for '+ROLES[r]+'.'); render(); }
+function openDoc(){ toast('Files open in a viewer in the real platform.'); }
+function signOut(){ try{localStorage.removeItem('goxl_user');}catch(e){} showSignin(); }
 function stopTimer(pid){ const a=S.active[pid]; if(!a) return; S.entries.push({id:'e'+(++S.seq),person:pid,task:a.task,start:a.start,end:Date.now()}); delete S.active[pid]; }
 function startTimer(pid, tid){
   const t=T(tid);
@@ -514,19 +539,19 @@ views.admin = () => {
   return `<div class="card"><h2>People and access <small>${people.filter(p=>p.on).length} active of ${people.length}</small></h2><div class="tablewrap"><table><thead><tr><th>Person</th><th>Role</th><th>Status</th>${projects.map(p=>`<th>${esc(p.name)}</th>`).join('')}</tr></thead><tbody>
     ${people.map(p=>`<tr><td><div style="display:flex;gap:8px;align-items:center">${av(p.id)}<span><b>${esc(p.name)}</b><br><span class="muted">${esc(p.role)}</span></span></div></td>
       <td><select data-role="${p.id}" aria-label="Role for ${esc(p.name)}">${rk.map(k=>`<option value="${k}" ${p.rk===k?'selected':''}>${ROLES[k]}</option>`).join('')}</select></td>
-      <td><button class="btn sm ${p.on?'':'danger'}" data-act="toggleon" data-id="${p.id}">${p.on?'Active':'Inactive'}</button></td>
+      <td><button class="btn sm ${p.on?'':'danger'}" data-act="toggleon" data-id="${p.id}">${p.on?'Active':p.status==='pending'?'Pending: approve':'Inactive'}</button></td>
       ${projects.map(pr=>`<td><input type="checkbox" data-acc="${p.id}:${pr.id}" ${all(p)||p.acc.includes(pr.id)?'checked':''} ${all(p)?'disabled':''} aria-label="${esc(p.name)} access to ${esc(pr.name)}"></td>`).join('')}</tr>`).join('')}
     </tbody></table></div><p class="note" style="margin-top:10px">Super Admin and Founder always see every project. Everyone else only sees the projects ticked here, including tasks, docs and chat channels.</p></div>
   <div class="card" style="margin-top:16px"><h2>What each role can do <small>Super Admin is fixed</small></h2><div class="tablewrap"><table><thead><tr><th>Permission</th>${rk.map(k=>`<th class="r">${ROLES[k]}</th>`).join('')}</tr></thead><tbody>
     ${PERMS.map(([k,n])=>`<tr><td>${n}</td>${rk.map(r=>`<td class="r"><input type="checkbox" data-perm="${r}:${k}" ${S.perms[r][k]?'checked':''} ${r==='super_admin'?'disabled':''} aria-label="${ROLES[r]}: ${n}"></td>`).join('')}</tr>`).join('')}
     <tr><td>Add task dependencies</td>${rk.map(()=>'<td class="r"><input type="checkbox" checked disabled aria-label="Always on"></td>').join('')}</tr></tbody></table></div></div>
   <div class="grid g2" style="margin-top:16px">
-    <div class="card"><h2>Invite a person</h2><div style="display:flex;flex-direction:column;gap:10px">
+    ${LIVE?'<div class="card"><h2>Adding people</h2><p class="muted" style="margin:0">New people create their own account on the sign-in screen. They appear in the table above as Pending until you approve them. Then choose their role and tick their projects.</p></div>':`<div class="card"><h2>Invite a person</h2><div style="display:flex;flex-direction:column;gap:10px">
       <label class="field">Name<input type="text" id="inName" placeholder="Full name"></label>
       <label class="field">Job title<input type="text" id="inJob" placeholder="For example, QA engineer"></label>
       <label class="field">Role<select id="inRole">${rk.filter(k=>k!=='super_admin').map(k=>`<option value="${k}" ${k==='member'?'selected':''}>${ROLES[k]}</option>`).join('')}</select></label>
-      <button class="btn pri" data-act="invite" style="align-self:flex-start">Add person</button></div></div>
-    <div class="card"><h2>Activity log <small>this session</small></h2><div class="list">${S.audit.length?S.audit.slice(0,10).map(a=>`<div class="li"><div class="grow"><div>${esc(a.x)}</div><div class="muted">${esc(P(a.who).name)} · ${tm(a.t)}</div></div></div>`).join(''):'<p class="muted" style="margin:0">No changes yet. Change a role or a permission to see it logged here.</p>'}</div></div>
+      <button class="btn pri" data-act="invite" style="align-self:flex-start">Add person</button></div></div>`}
+    <div class="card"><h2>Activity log <small>${LIVE?'latest changes':'this session'}</small></h2><div class="list">${S.audit.length?S.audit.slice(0,10).map(a=>`<div class="li"><div class="grow"><div>${esc(a.x)}</div><div class="muted">${esc(P(a.who).name)} · ${tm(a.t)}</div></div></div>`).join(''):'<p class="muted" style="margin:0">No changes yet. Change a role or a permission to see it logged here.</p>'}</div></div>
   </div>`;
 };
 const statusChip = t => t.status==='done' ? '<span class="chip good">Done</span>' : blocked(t) ? '<span class="chip bad">Blocked</span>' : t.status==='doing' ? '<span class="chip acc">In progress</span>' : '<span class="chip">Ready</span>';
@@ -633,11 +658,12 @@ function submitLog(){
   const bad=tasks.find(t=>t.blocked&&!t.blockedBy.trim()); if(bad) return toast('Say who is blocking "'+bad.taskName+'".');
   const log=JSON.parse(JSON.stringify(d)); log.tasks=tasks; log.newTasksForOthers=d.newTasksForOthers.filter(t=>t.task.trim()||t.assignedTo.trim());
   log.employee.name=p.name; log.employee.role=p.role; log.submittedAt=Date.now();
-  const i=S.logs.findIndex(l=>l.employee.name.toLowerCase()===p.name.toLowerCase()&&l.employee.date===log.employee.date);
-  if(i>=0){ log.id=S.logs[i].id; S.logs[i]=log; } else { log.id='l'+(++S.seq); S.logs.push(log); }
-  S.drafts[S.user]=logToDraft(log); S.exec=null;
-  toast('Saved. '+tasks.length+' task(s) logged for '+log.employee.date+(i>=0?' (replaced your earlier log).':'.')); render();
+  Promise.resolve(saveLog(log)).then(replaced=>{ if(replaced===null) return; S.drafts[S.user]=logToDraft(log); S.exec=null;
+    toast('Saved. '+tasks.length+' task(s) logged for '+log.employee.date+(replaced?' (replaced your earlier log).':'.')); render(); });
 }
+// Stores a log. Returns true if it replaced an earlier log for that day, false if new, null if it could not be saved.
+function saveLog(log){ const n=log.employee.name.toLowerCase(), i=S.logs.findIndex(l=>l.employee.name.toLowerCase()===n&&l.employee.date===log.employee.date);
+  if(i>=0){ log.id=S.logs[i].id; S.logs[i]=log; return true; } log.id='l'+(++S.seq); S.logs.push(log); return false; }
 function fillFromTimer(){
   const d=draft(), t0=new Date(); t0.setHours(0,0,0,0);
   const E=allEntries().filter(e=>e.person===S.user&&e.start>=t0.getTime());
@@ -646,7 +672,7 @@ function fillFromTimer(){
   const CAT={clarityos:'Product — ClarityOS',ally:'Product — GoXL Ally',wie:'Engineering / Dev',site:'Content & Marketing'};
   const have=d.tasks.map(t=>t.taskName.trim().toLowerCase());
   const rows=Object.entries(by).filter(([id])=>!have.includes(T(id).title.toLowerCase())).map(([id,m])=>{ const t=T(id), od=openDeps(t);
-    return Object.assign(blankTask(),{taskName:t.title,category:CAT[t.project],priority:(t.priority==='urgent'||t.priority==='high')?'High':t.priority==='low'?'Low':'Medium',plannedTime:t.est+'h',actualTime:(Math.round(m/6)/10)+'h',status:t.status==='done'?'Completed':t.status==='doing'?'In Progress':'Not Started',percentComplete:String(t.status==='done'?100:Math.min(95,Math.round(m/60/t.est*100))),blocked:od.length>0,blockedBy:od.length?P(od[0].who).name:'',blockReason:od.length?'Waiting on "'+od[0].title+'"':'',waitingSince:od.length?today():''}); });
+    return Object.assign(blankTask(),{taskName:t.title,category:CAT[t.project]||'',priority:(t.priority==='urgent'||t.priority==='high')?'High':t.priority==='low'?'Low':'Medium',plannedTime:t.est+'h',actualTime:(Math.round(m/6)/10)+'h',status:t.status==='done'?'Completed':t.status==='doing'?'In Progress':'Not Started',percentComplete:String(t.status==='done'?100:Math.min(95,Math.round(m/60/t.est*100))),blocked:od.length>0,blockedBy:od.length?P(od[0].who).name:'',blockReason:od.length?'Waiting on "'+od[0].title+'"':'',waitingSince:od.length?today():''}); });
   d.tasks=d.tasks.filter(t=>t.taskName.trim()).concat(rows);
   if(!d.tasks.length) d.tasks=[blankTask()];
   toast(rows.length?rows.length+' task(s) added from your timer.':'Your tracked tasks are already in the log.'); render();
@@ -719,7 +745,7 @@ views.founder = () => {
 function myLogOf(m,date){ return S.logs.find(l=>l.employee.name.toLowerCase()===m.name.toLowerCase()&&l.employee.date===date); }
 
 views.dashboard = () => {
-  const E=allEntries(), total=E.reduce((a,e)=>a+emin(e),0);
+  const E=weekEntries(), total=E.reduce((a,e)=>a+emin(e),0);
   const VT=visTasks(), done=VT.filter(t=>t.status==='done').length, doing=VT.filter(t=>t.status==='doing').length, bl=VT.filter(blocked);
   const act=Object.entries(S.active);
   return `<div class="grid g4">
@@ -738,7 +764,7 @@ views.dashboard = () => {
     </div></div>
   </div>
   <div class="card" style="margin-top:16px"><h2>Contribution by project <small>hours logged against estimate</small></h2>${projectBars()}</div>
-  <p class="note">Preview with sample data. Timers run live; add dependencies and mark tasks done to see tasks unblock.</p>`;
+  ${LIVE?'':'<p class="note">Preview with sample data. Timers run live; add dependencies and mark tasks done to see tasks unblock.</p>'}`;
 };
 
 function projectBars(){
@@ -785,9 +811,9 @@ views.time = () => {
       <div class="card"><h2>My tasks <small>${todo.length} open</small></h2><div class="list">${todo.map(t=>`<div class="li"><div class="grow"><div>${esc(t.title)}</div><div class="muted">${blocked(t)?'Blocked by '+esc(openDeps(t)[0].title):h(taskMin(t.id))+' of '+t.est+'h'}</div></div>${blocked(t)?'<span class="chip bad">Blocked</span>':`<button class="btn sm ${a&&a.task===t.id?'':'pri'}" data-act="start" data-id="${t.id}" ${a&&a.task===t.id?'disabled':''}>${a&&a.task===t.id?'Running':'Start'}</button>`}</div>`).join('') || '<p class="muted">No open tasks.</p>'}</div></div>
     </div>
     <div class="card" style="margin-top:16px"><h2>My recent time entries</h2><div class="tablewrap"><table><thead><tr><th>Day</th><th>Task</th><th>Start</th><th>End</th><th class="r">Duration</th></tr></thead><tbody>
-      ${todays.map(e=>`<tr><td>${dayName(Math.min(6,Math.max(0,Math.floor((e.start-WEEK0)/DAY))))}</td><td>${esc(T(e.task).title)}</td><td>${tm(e.start)}</td><td>${e.live?'<span class="chip acc">running</span>':tm(e.end)}</td><td class="r">${h(emin(e))}</td></tr>`).join('')}</tbody></table></div></div>`;
-  } else mine=`<div class="card"><h2>Founder view</h2><p class="muted">Time tracking belongs to team members. Use "Viewing as" in the top bar to try a timer, or read the team timesheet below.</p></div>`;
-  return mine + `<div class="card" style="margin-top:16px"><h2>Team timesheet <small>hours per day, week of 16 Nov</small></h2><div class="tablewrap"><table><thead><tr><th>Member</th>${[0,1,2,3,4].map(i=>`<th class="r">${dayName(i)}</th>`).join('')}<th class="r">Total</th></tr></thead><tbody>
+      ${todays.map(e=>`<tr><td>${dayLbl(e.start)}</td><td>${esc(T(e.task).title)}</td><td>${tm(e.start)}</td><td>${e.live?'<span class="chip acc">running</span>':tm(e.end)}</td><td class="r">${h(emin(e))}</td></tr>`).join('')}</tbody></table></div></div>`;
+  } else mine=`<div class="card"><h2>Founder view</h2><p class="muted">Time tracking belongs to team members. ${LIVE?'Read the team timesheet below.':'Use "Viewing as" in the top bar to try a timer, or read the team timesheet below.'}</p></div>`;
+  return mine + `<div class="card" style="margin-top:16px"><h2>Team timesheet <small>hours per day, week of ${weekOf()}</small></h2><div class="tablewrap"><table><thead><tr><th>Member</th>${[0,1,2,3,4].map(i=>`<th class="r">${dayName(i)}</th>`).join('')}<th class="r">Total</th></tr></thead><tbody>
     ${members().map(m=>{ const row=[0,1,2,3,4].map(i=>E.filter(e=>e.person===m.id&&Math.floor((e.start-WEEK0)/DAY)===i).reduce((a,e)=>a+emin(e),0)); return `<tr><td>${esc(m.name)}</td>${row.map(v=>`<td class="r">${v?h(v):'–'}</td>`).join('')}<td class="r"><b>${h(row.reduce((a,b)=>a+b,0))}</b></td></tr>`; }).join('')}</tbody></table></div></div>`;
 };
 
@@ -815,22 +841,22 @@ function docList(){ return filteredDocs().map(d=>`<button class="docrow" data-ac
 function docPreview(){
   const d=S.docs.find(x=>x.id===S.docSel); if(!d) return '<div class="paper muted">Select a document to preview it.</div>';
   const blocks=d.body.split('\n\n').map(b=> b.startsWith('- ') ? '<ul>'+b.split('\n').map(l=>'<li>'+esc(l.slice(2))+'</li>').join('')+'</ul>' : '<p>'+esc(b)+'</p>').join('');
-  return `<div class="paper"><div class="meta">${projChip(d.project)}<span class="chip">${esc(d.type)}</span></div><h2 style="margin-top:10px">${esc(d.name)}</h2><div class="muted">Owner ${esc(P(d.owner).name)} · updated ${esc(d.upd)}</div>${blocks}</div>`;
+  return `<div class="paper"><div class="meta">${projChip(d.project)}<span class="chip">${esc(d.type)}</span></div><h2 style="margin-top:10px">${esc(d.name)}</h2><div class="muted">Owner ${esc(P(d.owner).name)} · updated ${esc(d.upd)}</div>${LIVE&&d.path?`<p><button class="btn sm" data-act="opendoc" data-id="${d.id}">Open file</button></p>`:''}${blocks}</div>`;
 }
 views.docs = () => `<div class="toolbar"><input type="search" id="docQ" placeholder="Search documents" value="${esc(S.docQ)}" aria-label="Search documents">
   <select id="docProj" aria-label="Project"><option value="all">All projects</option>${visProjects().map(p=>`<option value="${p.id}" ${S.docProj===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
   ${can('uploadDoc')?'<label class="btn pri sp" for="upload" style="cursor:pointer">Upload document</label><input id="upload" type="file" accept=".txt,.md,.csv,.pdf,.docx" hidden>':'<span class="sp muted">Your role cannot upload documents.</span>'}</div>
   <div class="docs"><div class="card" style="padding:8px"><div id="doclist">${docList()}</div></div><div id="docprev">${docPreview()}</div></div>
-  <p class="note">One shared library for every project. Text and Markdown files preview here; other types are stored with a placeholder in this prototype.</p>`;
+  <p class="note">${LIVE?'One shared library for every project. Text, Markdown and CSV files preview here; use Open file for everything else.':'One shared library for every project. Text and Markdown files preview here; other types are stored with a placeholder in this prototype.'}</p>`;
 
 function weekStats(){
-  const E=allEntries();
+  const E=weekEntries();
   const perDay=[0,1,2,3,4].map(i=>projects.map(p=>E.filter(e=>Math.floor((e.start-WEEK0)/DAY)===i&&T(e.task).project===p.id).reduce((a,e)=>a+emin(e),0)));
   return {E, perDay, total:E.reduce((a,e)=>a+emin(e),0)};
 }
 function reportText(){
   const {E,total}=weekStats(), bl=S.tasks.filter(blocked);
-  return ['GoXL weekly report, week of 16 Nov 2026','',
+  return ['GoXL weekly report, week of '+weekOf()+' '+new Date(WEEK0).getFullYear(),'',
    `Hours logged: ${h(total)}   Tasks done: ${S.tasks.filter(t=>t.status==='done').length}/${S.tasks.length}   Blocked: ${bl.length}`,'','By project:',
    ...projects.map(p=>`- ${p.name}: ${h(E.filter(e=>T(e.task).project===p.id).reduce((a,e)=>a+emin(e),0))}`),'','By member:',
    ...members().map(m=>`- ${m.name}: ${h(E.filter(e=>e.person===m.id).reduce((a,e)=>a+emin(e),0))}`),'','Blocked:',
@@ -858,7 +884,7 @@ views.reports = () => {
     <div class="card kpi"><b>${S.tasks.filter(t=>t.status==='doing').length}</b><span>In progress</span></div>
     <div class="card kpi ${S.tasks.some(blocked)?'bad':''}"><b>${S.tasks.filter(blocked).length}</b><span>Blocked</span></div></div>
   <div class="grid g2" style="margin-top:16px">
-    <div class="card"><h2>Hours per day by project <small>Mon to Fri, 16 to 20 Nov</small></h2>
+    <div class="card"><h2>Hours per day by project <small>Mon to Fri, ${weekRange()}</small></h2>
       <div class="chart">${perDay.map(d=>{ const tot=d.reduce((a,b)=>a+b,0)/60; return `<div class="d"><span class="v">${tot?tot.toFixed(1):''}</span><div class="stack" style="height:${tot/max*150}px">${d.map((v,i)=>`<span style="height:${tot?v/60/tot*100:0}%;background:${projects[i].c}" title="${esc(projects[i].name)} ${h(v)}"></span>`).join('')}</div></div>`; }).join('')}</div>
       <div class="xl">${[0,1,2,3,4].map(i=>`<span>${dayName(i)}</span>`).join('')}</div>
       <div class="legend">${projects.map(p=>`<span><i class="dot" style="display:inline-block;background:${p.c};margin-right:6px"></i>${esc(p.name)}</span>`).join('')}</div></div>
@@ -872,7 +898,7 @@ function msgList(){
   return ms.map(m=>`<div class="msg">${av(m.who)}<div><b>${esc(P(m.who).name)}</b><span class="t">${esc(m.t)}</span><p>${esc(m.x)}</p></div></div>`).join('') || '<p class="muted">No messages yet.</p>';
 }
 views.chat = () => `<div class="chat"><div class="card chans" style="padding:8px">${visChannels().map(([id,n])=>`<button data-act="chan" data-id="${id}" aria-current="${S.channel===id}"># ${esc(n)}</button>`).join('')}</div>
-  <div class="card room"><div class="msgs" id="msgs">${msgList()}</div><div class="compose"><input type="text" id="msgIn" placeholder="Message #${esc(S.channel)}" aria-label="Message"><button class="btn pri" data-act="send">Send</button></div></div></div>`;
+  <div class="card room"><div class="msgs" id="msgs">${msgList()}</div><div class="compose"><input type="text" id="msgIn" placeholder="Message #${esc(LIVE?(S.channels.find(c=>c[0]===S.channel)||[0,S.channel])[1]:S.channel)}" aria-label="Message"><button class="btn pri" data-act="send">Send</button></div></div></div>`;
 
 /* ---------- Shell ---------- */
 const NAV=[['dashboard','Overview'],['tasks','Tasks'],['time','Time'],['projects','Projects'],['log','Daily log'],['founder','Founder dashboard'],['docs','Docs'],['reports','Reports'],['chat','Team chat'],['admin','Admin']];
@@ -886,7 +912,7 @@ function renderSide(){
 function renderTop(){
   const a=S.active[S.user];
   $('#top').innerHTML=`<h1>${TITLE[S.view]}</h1>${a?`<span class="pill run"><span class="dot"></span>${esc(T(a.task).title)} <b class="mono" data-elapsed="${S.user}">${clock(Date.now()-a.start)}</b></span>`:''}
-   <label>Viewing as <select id="who">${people.filter(p=>p.on).map(p=>`<option value="${p.id}" ${p.id===S.user?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label>`;
+   ${LIVE?'':`<label>Viewing as <select id="who">${people.filter(p=>p.on).map(p=>`<option value="${p.id}" ${p.id===S.user?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label>`}`;
 }
 function renderDrawer(){
   const o=$('#overlay'); if(S.open===null){ o.innerHTML=''; return; }
@@ -904,7 +930,7 @@ function renderDrawer(){
     o.innerHTML=`<div class="shade" data-act="close"><form class="drawer" id="newform"><h2>New task</h2>
       <label class="field">Title<input type="text" id="nt" required placeholder="What needs doing?"></label>
       <div class="row2"><label class="field">Project<select id="np">${visProjects().map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></label>
-      <label class="field">Assignee<select id="nw">${activeMembers().map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select></label></div>
+      <label class="field">Assignee<select id="nw">${assignable((visProjects()[0]||{}).id).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select></label></div>
       <div class="row2"><label class="field">Estimate (hours)<input type="number" id="ne" min="0.5" step="0.5" value="4"></label>
       <label class="field">Priority<select id="npr">${Object.entries(PRIO).map(([k,v])=>`<option value="${k}" ${k==='medium'?'selected':''}>${v.n}</option>`).join('')}</select></label></div>
       <label class="field">Due date (optional)<input type="date" id="nd"></label>
@@ -919,7 +945,7 @@ function renderDrawer(){
     <div style="display:flex;justify-content:space-between;gap:12px"><div><div class="meta">${projChip(t.project)} ${statusChip(t)}</div><h2 style="margin-top:8px">${esc(t.title)}</h2></div><button class="btn sm" data-act="close" aria-label="Close">Close</button></div>
     <div class="row2"><label class="field">Priority${can('setPriority')?`<select id="prioSel">${Object.entries(PRIO).map(([k,v])=>`<option value="${k}" ${t.priority===k?'selected':''}>${v.n}</option>`).join('')}</select>`:`<span>${prioChip(t.priority)}</span>`}</label>
       <label class="field">Due date<input type="date" id="dueSel" value="${esc(t.due||'')}" ${can('setPriority')?'':'disabled'}></label></div>
-    <div class="row2"><label class="field">Assignee<select id="assign" ${can('reassign')?'':'disabled'}>${activeMembers().concat(members().filter(m=>!m.on&&m.id===t.who)).map(m=>`<option value="${m.id}" ${m.id===t.who?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label>
+    <div class="row2"><label class="field">Assignee<select id="assign" ${can('reassign')?'':'disabled'}>${LIVE&&!t.who?'<option value="" selected>Unassigned</option>':''}${(LIVE?assignable(t.project).concat(people.filter(m=>m.id===t.who&&!assignable(t.project).includes(m))):activeMembers().concat(members().filter(m=>!m.on&&m.id===t.who))).map(m=>`<option value="${m.id}" ${m.id===t.who?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label>
       <div class="field">Time logged<b class="mono" style="font-size:18px;color:var(--ink)">${h(taskMin(t.id))} <span class="muted" style="font-size:12px">of ${t.est}h</span></b></div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       ${t.status!=='done'?`<button class="btn pri" data-act="start" data-id="${t.id}" ${mine?'disabled':''}>${mine?'Timer running':'Start my timer'}</button><button class="btn" data-act="done" data-id="${t.id}">Mark done</button>`:'<span class="chip good">Completed</span>'}
@@ -927,7 +953,7 @@ function renderDrawer(){
     <div class="sec"><h3>Depends on</h3>${t.deps.length?t.deps.map(id=>{const d=T(id);return `<div class="li">${av(d.who)}<div class="grow"><div>${esc(d.title)}</div><div class="muted">${esc(P(d.who).name)}</div></div>${statusChip(d)}<button class="btn sm danger" data-act="rmdep" data-id="${d.id}" aria-label="Remove dependency">Remove</button></div>`;}).join(''):'<p class="muted" style="margin:0">No dependencies.</p>'}
       <div style="display:flex;gap:8px"><select id="depSel" style="flex:1" aria-label="Add dependency"><option value="">Add a task this one waits on…</option>${cands.map(x=>`<option value="${x.id}">${esc(x.title)} (${esc(P(x.who).name.split(' ')[0])})</option>`).join('')}</select><button class="btn" data-act="adddep">Add</button></div></div>
     <div class="sec"><h3>Unblocks</h3>${dependents.length?dependents.map(d=>`<div class="li">${av(d.who)}<div class="grow">${esc(d.title)}</div>${statusChip(d)}</div>`).join(''):'<p class="muted" style="margin:0">Nothing waits on this task.</p>'}</div>
-    <div class="sec"><h3>Time entries</h3>${ents.length?ents.map(e=>`<div class="li">${av(e.person)}<div class="grow">${dayName(Math.min(6,Math.max(0,Math.floor((e.start-WEEK0)/DAY))))} ${tm(e.start)} to ${e.live?'now':tm(e.end)}</div><span class="mono">${h(emin(e))}</span></div>`).join(''):'<p class="muted" style="margin:0">No time logged yet.</p>'}</div>
+    <div class="sec"><h3>Time entries</h3>${ents.length?ents.map(e=>`<div class="li">${av(e.person)}<div class="grow">${dayLbl(e.start)} ${tm(e.start)} to ${e.live?'now':tm(e.end)}</div><span class="mono">${h(emin(e))}</span></div>`).join(''):'<p class="muted" style="margin:0">No time logged yet.</p>'}</div>
   </div></div>`;
 }
 function render(){ if(!navOk([S.view])) S.view='dashboard'; if(!visChannels().some(c=>c[0]===S.channel)) S.channel='general'; renderSide(); renderTop(); const m=$('#main'); m.innerHTML=views[S.view](); renderDrawer(); if(S.view==='chat'){const b=$('#msgs'); b&&(b.scrollTop=b.scrollHeight);} }
@@ -938,7 +964,7 @@ function showSignin(){
    ${people.filter(p=>p.on).map(p=>`<button class="who" data-act="login" data-id="${p.id}">${av(p.id)}<span><b>${esc(p.name)}</b><br><span class="muted">${esc(p.role)}</span></span></button>`).join('')}
    <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="keep" checked> Keep me signed in</label></div></div>`;
 }
-try{ const u=localStorage.getItem('goxl_user'); if(u && P(u)) S.user=u; }catch(e){}
+try{ const u=localStorage.getItem('goxl_user'); if(u && people.some(p=>p.id===u)) S.user=u; }catch(e){}
 
 /* ---------- Events ---------- */
 document.addEventListener('click', e=>{
@@ -970,33 +996,35 @@ document.addEventListener('click', e=>{
   else if(a==='execsum'){ const r=logRange(); const logs=S.logs.filter(l=>l.employee.date>=r.from&&l.employee.date<=r.to); S.exec=localSummary(buildDash(logs),logs); render(); const c=$('#execcard'); if(c&&c.scrollIntoView) c.scrollIntoView({block:'start'}); }
   else if(a==='invite'){ invite(); }
   else if(a==='start'){ startTimer(S.user,id); }
-  else if(a==='stop'){ stopTimer(S.user); toast('Timer paused. Time saved.'); render(); }
+  else if(a==='stop'){ pauseTimer(); }
   else if(a==='done'){ markDone(id); }
   else if(a==='adddep'){ addDep(S.open,$('#depSel').value); }
-  else if(a==='rmdep'){ const t=T(S.open); t.deps=t.deps.filter(x=>x!==id); toast('Dependency removed.'); render(); }
+  else if(a==='rmdep'){ removeDep(S.open,id); }
   else if(a==='doc'){ S.docSel=id; $('#doclist').innerHTML=docList(); $('#docprev').innerHTML=docPreview(); }
   else if(a==='rtab'){ S.reportTab=id; render(); }
   else if(a==='chan'){ S.channel=id; render(); }
   else if(a==='send'){ sendMsg(); }
   else if(a==='copyreport'){ const txt=reportText(); try{ navigator.clipboard.writeText(txt).then(()=>toast('Report copied.'),()=>toast('Copy was blocked here.')); }catch(err){ toast('Copy was blocked here.'); } }
-  else if(a==='signout'){ try{localStorage.removeItem('goxl_user');}catch(e){} showSignin(); }
+  else if(a==='signout'){ signOut(); }
+  else if(a==='opendoc'){ openDoc(id); }
   else if(a==='login'){ S.user=id; try{ if($('#keep').checked) localStorage.setItem('goxl_user',id); }catch(e){} $('#overlay').innerHTML=''; render(); }
 });
 document.addEventListener('change', e=>{
   const id=e.target.id, d=e.target.dataset;
   if(d.up){ [...e.target.files].forEach(f=>addDocFile(f,d.up)); e.target.value=''; return; }
   if(d.role){ setRole(d.role,e.target.value); return; }
-  if(d.acc){ const [pid,pr]=d.acc.split(':'), p=P(pid); p.acc=e.target.checked?[...new Set(p.acc.concat(pr))]:p.acc.filter(x=>x!==pr); audit(p.name+(e.target.checked?' given access to ':' removed from ')+PR(pr).name); toast('Access updated for '+p.name+'.'); render(); return; }
-  if(d.perm){ const [r,k]=d.perm.split(':'); S.perms[r][k]=e.target.checked; audit(ROLES[r]+': '+PERMS.find(x=>x[0]===k)[1]+(e.target.checked?' allowed':' removed')); toast('Permission updated for '+ROLES[r]+'.'); render(); return; }
-  if(id==='prioSel'){ if(!can('setPriority')) return; const t=T(S.open); t.priority=e.target.value; audit('Priority of "'+t.title+'" set to '+PRIO[t.priority].n); toast('Priority set to '+PRIO[t.priority].n+'.'); render(); return; }
-  if(id==='dueSel'){ if(!can('setPriority')) return; T(S.open).due=e.target.value; render(); return; }
+  if(d.acc){ const [pid,pr]=d.acc.split(':'); setAccess(pid,pr,e.target.checked); return; }
+  if(d.perm){ const [r,k]=d.perm.split(':'); setPerm(r,k,e.target.checked); return; }
+  if(id==='prioSel'){ if(!can('setPriority')) return; setPriority(S.open,e.target.value); return; }
+  if(id==='dueSel'){ if(!can('setPriority')) return; setDue(S.open,e.target.value); return; }
+  if(id==='np'){ const s=$('#nw'); if(s) s.innerHTML=assignable(e.target.value).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join(''); return; }
   if(id==='fPrio'){ S.fPrio=e.target.value; render(); return; }
   if(id==='sheetfile'){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ S.sheetText=String(r.result); S.sheetRows=checkSheet(S.sheetText); renderDrawer(); }; r.readAsText(f); return; }
   if(id==='who'){ S.user=e.target.value; try{localStorage.setItem('goxl_user',S.user);}catch(x){} render(); }
   else if(id==='fPerson'){ S.fPerson=e.target.value; render(); }
   else if(id==='fProject'){ S.fProject=e.target.value; render(); }
   else if(id==='docProj'){ S.docProj=e.target.value; $('#doclist').innerHTML=docList(); }
-  else if(id==='assign'){ T(S.open).who=e.target.value; toast('Reassigned to '+P(e.target.value).name+'.'); render(); }
+  else if(id==='assign'){ assignTask(S.open,e.target.value); }
   else if(id==='upload'){
     [...e.target.files].forEach(f=>addDocFile(f,S.docProj==='all'?visIds()[0]:S.docProj)); e.target.value='';
   }
@@ -1018,8 +1046,7 @@ document.addEventListener('submit', e=>{
   if(e.target.id==='newform'){ e.preventDefault();
     const title=$('#nt').value.trim(); if(!title) return;
     if(!can('addTask')) return toast('Your role cannot add tasks.');
-    const t={id:'t'+(++S.seq),title,project:$('#np').value,who:$('#nw').value,est:parseFloat($('#ne').value)||4,status:'todo',deps:[],priority:$('#npr').value,due:$('#nd').value};
-    S.tasks.push(t); audit('Added task "'+title+'" ('+PRIO[t.priority].n+')'); S.open=t.id; toast('Task created.'); render(); }
+    createTask({title,project:$('#np').value,who:$('#nw').value,est:parseFloat($('#ne').value)||4,priority:$('#npr').value,due:$('#nd').value}); }
 });
 function sendMsg(){
   const i=$('#msgIn'); const x=i.value.trim(); if(!x) return;
@@ -1027,7 +1054,9 @@ function sendMsg(){
   const b=$('#msgs'); b.innerHTML=msgList(); b.scrollTop=b.scrollHeight;
 }
 setInterval(()=>{ document.querySelectorAll('[data-elapsed]').forEach(el=>{ const a=S.active[el.dataset.elapsed]; if(a) el.textContent=clock(Date.now()-a.start); }); },1000);
-render();
+if(!LIVE) render();   // LIVE: team/backend.js signs the person in, loads their data, then renders
 </script>
+<script src="/team/vendor/supabase-2.119.2.js"></script>
+<script src="/team/backend.js"></script>
 </body>
 </html>

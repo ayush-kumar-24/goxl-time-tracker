@@ -1,5 +1,7 @@
 # Wiring the front-end to Supabase
 
+**Status: implemented in `team/backend.js`.** The table below is the map it follows. Status changes on tasks go through `start_timer`, `complete_task` and `reopen_task`; direct edits are limited to title, description, estimate, priority, due date and assignee.
+
 The demo keeps everything in the object `S` and calls `render()`. Replace the in-memory seeds with queries, and each action with the call below. Use `@supabase/supabase-js` (CDN) with the project URL and publishable key. Keep the session persistent (default) for "stay logged in".
 
 | UI action (function in index.html) | Supabase call |

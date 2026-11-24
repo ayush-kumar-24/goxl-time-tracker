@@ -8,36 +8,48 @@ Internal team platform for GoXL Tech: tasks with dependencies, automatic start/e
 
 | Part | Status |
 |---|---|
-| Front-end (`team/index.html`) | Complete and clickable, but runs in **demo mode**: data is in memory and resets on reload. |
-| Database (`supabase/schema.sql`) | Complete. Tables, security rules, server-side functions, file storage. **Tested** (49 checks, `supabase/tests`). Not yet applied to a live project. |
-| Wiring front-end to database | **Not done.** `docs/BACKEND_INTEGRATION.md` maps every screen action to a database call. |
-| Hosting | **Not done.** `docs/DEPLOY_VERCEL.md` has the steps. |
+| Front-end (`team/index.html`) | Runs as the **demo** while `team/config.js` is empty. With a Supabase project filled in, it uses real sign-in and the real database (`team/backend.js`). |
+| Database (`supabase/schema.sql` + `supabase/migrations/`) | Complete and tested locally. Not yet applied to a hosted project. |
+| Wiring front-end to database | Done and tested on a local stack with five roles. See `docs/PHASE0_RESULTS.md`. |
+| Hosting, staging | **Not done.** `docs/STAGING_SETUP.md` and `docs/DEPLOY_VERCEL.md` have the steps. |
+| AI assistant | **Not started.** Plan in `docs/AI_ASSISTANT_PLAN.md`. |
 
 ## Repo layout
 
 ```
-team/index.html          the whole front-end (single file, no build step)
-supabase/schema.sql      run once in a Supabase project
-supabase/tests/          local test suite for the schema (plain Postgres)
+team/index.html          the screens (single file, no build step)
+team/backend.js          real mode: sign-in, loading, database calls
+team/config.js           Supabase address and publishable key (empty = demo)
+team/vendor/             Supabase client library
+supabase/schema.sql      baseline schema, run once
+supabase/migrations/     changes applied after the baseline, in name order
+supabase/tests/          database test suites (plain Postgres)
+supabase/local/          local stack with the real Supabase auth, API and storage servers
+tests/e2e/               browser tests
 vercel.json              serves the app at /team
-docs/                    architecture, roles, data model, integration, deploy
+docs/                    architecture, roles, data model, plan, results, setup
 ```
 
 ## Quick start for the team
 
-1. Create a Supabase project, run `supabase/schema.sql` in the SQL editor.
+1. Create a Supabase project, run `supabase/schema.sql`, then every file in `supabase/migrations/`.
 2. **Sign up first as Viraj**: the first account becomes Super Admin automatically, then the door closes. Everyone else waits as "pending" until approved in the Admin panel.
-3. Wire the front-end (`docs/BACKEND_INTEGRATION.md`).
+3. Put the project URL and publishable key in `team/config.js`.
 4. Deploy to Vercel and attach `www.goxl.in` (`docs/DEPLOY_VERCEL.md`).
 
-## Run the schema tests
+Full steps: `docs/STAGING_SETUP.md`.
 
-Needs PostgreSQL 15+ and Python with `psycopg2`.
+## Run the tests
+
+Database suites need PostgreSQL 15+ and Python with `psycopg2`. They create and drop scratch databases named `goxl_test_*`.
 
 ```
-createdb t
-psql -d t -f supabase/tests/stubs.sql    # stand-ins for Supabase's auth/storage
-psql -d t -f supabase/schema.sql
-python3 supabase/tests/run_tests.py "dbname=t"
+PGPORT=5432 supabase/tests/run_all.sh
 ```
-Use a fresh database each run (the first sign-up closes the bootstrap).
+
+Browser tests also need Docker and Node 18+ with Playwright.
+
+```
+PGPORT=5432 supabase/local/start.sh
+node tests/e2e/roles.cjs
+```
