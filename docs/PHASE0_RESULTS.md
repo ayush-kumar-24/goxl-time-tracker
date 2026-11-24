@@ -29,7 +29,7 @@ The demo is unchanged. With `team/config.js` left empty the page behaves as befo
 | Original schema checks, migration applied | Nothing that worked before is broken | 49 of 49 |
 | Hardening checks, migration applied | Every attack is refused; legitimate edits still work | 34 of 34 |
 | Migration applied twice | Re-runnable | pass |
-| Browser, real sign-in, five accounts | Roles see and can do only what they should, through the real page and through hand-made requests | 67 of 67 |
+| Browser, real sign-in, five accounts | Roles see and can do only what they should, through the real page and through hand-made requests | 66 of 66 |
 | Demo comparison, old page against new page | 64 recorded screens and 31 messages are identical, no script errors | 0 differences |
 
 ### What the browser test covers
