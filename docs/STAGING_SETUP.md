@@ -47,6 +47,18 @@ These are the items the local run could not cover, plus a short repeat of the ro
 - [ ] Supabase dashboard, Advisors: review security and performance findings.
 - [ ] Deactivate a test account; it is locked out on its next page load.
 
+### Optional: the automated role test on staging
+
+`tests/e2e/roles.cjs` can run against the hosted project, but only while it is **empty**, because the test's first sign-up becomes Super Admin.
+
+1. Do steps 1, 2 and 5 only. Do not sign up yet.
+2. Temporarily turn "Confirm email" off.
+3. Serve the repo locally with `team/config.js` pointing at staging, then run `BASE_URL=http://127.0.0.1:<port> node tests/e2e/roles.cjs`.
+4. The test leaves five `@goxl.test` accounts and one project behind. Clearing them means deleting data, so decide first: either recreate the staging project and continue from step 1, or keep them as test accounts and have a person approve that.
+5. Turn "Confirm email" back on, then do step 3 (real Super Admin sign-up).
+
+If the project already has real accounts, skip this and use the manual checklist above.
+
 ## 7. Before production
 
 - Add a Content-Security-Policy header in `vercel.json` that allows only the app's own files and the Supabase address.
