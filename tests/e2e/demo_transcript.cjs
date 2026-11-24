@@ -28,7 +28,7 @@ let last = 'start';
   const nav = async id => { await page.click(`#side .nav[data-id="${id}"]`); };
 
   // 1. Every screen, as four different roles.
-  for (const who of ['viraj', 'sumit', 'aria', 'bharat']) {
+  for (const who of ['viraj', 'sumit', 'aarya', 'bharat']) {
     await as(who);
     for (const id of await page.$$eval('#side .nav', els => els.map(e => e.dataset.id))) { await nav(id); await snap(who + ' / ' + id); }
     if (await page.locator('[data-act="rtab"][data-id="team"]').count()) { await nav('reports'); await page.click('[data-act="rtab"][data-id="team"]'); await snap(who + ' / reports team'); }
@@ -54,7 +54,7 @@ let last = 'start';
 
   // 4. New task, sheet import, new project.
   await page.click('[data-act="newtask"]'); await snap('new task form');
-  await page.fill('#nt', 'Transcript task'); await page.selectOption('#np', 'ally'); await page.selectOption('#nw', 'aria'); await page.selectOption('#npr', 'high'); await page.fill('#nd', '2026-11-30');
+  await page.fill('#nt', 'Transcript task'); await page.selectOption('#np', 'ally'); await page.selectOption('#nw', 'aarya'); await page.selectOption('#npr', 'high'); await page.fill('#nd', '2026-11-30');
   await page.click('#newform button[type=submit]'); await snap('task created');
   await page.keyboard.press('Escape');
   await page.click('[data-act="sheet"]'); await page.click('[data-act="sheetexample"]'); await page.click('[data-act="sheetparse"]'); await snap('sheet checked');
@@ -68,7 +68,7 @@ let last = 'start';
 
   // 6. Admin: role, status, access, permission, invite.
   await nav('admin');
-  await page.selectOption('select[data-role="aria"]', 'pm'); await snap('role changed');
+  await page.selectOption('select[data-role="aarya"]', 'pm'); await snap('role changed');
   await page.click('[data-act="toggleon"][data-id="bharat"]'); await snap('person deactivated');
   await page.click('input[data-acc="akshat:clarityos"]'); await snap('access granted');
   await page.click('input[data-perm="member:addTask"]'); await snap('permission changed');
@@ -78,7 +78,7 @@ let last = 'start';
   await nav('chat'); await page.click('.chans button >> nth=1'); await page.fill('#msgIn', 'Transcript message'); await page.click('[data-act="send"]'); await snap('message sent');
   await nav('docs'); await page.click('.docrow >> nth=2'); await snap('doc selected');
   await page.setInputFiles('#upload', { name: 'notes.md', mimeType: 'text/markdown', buffer: Buffer.from('Hello\n\n- one\n- two') }); await snap('doc uploaded');
-  await as('aria'); await nav('log'); await page.click('[data-act="logfill"]'); await snap('log filled from timer');
+  await as('aarya'); await nav('log'); await page.click('[data-act="logfill"]'); await snap('log filled from timer');
   await page.click('[data-act="logsubmit"]'); await snap('log submitted');
   await as('viraj'); await nav('founder'); await page.selectOption('#frange', 'today'); await page.click('[data-act="execsum"]'); await snap('executive summary');
   await nav('reports'); await snap('reports after all changes');

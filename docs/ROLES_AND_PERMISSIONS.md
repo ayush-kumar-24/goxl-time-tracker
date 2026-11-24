@@ -23,6 +23,15 @@ Always true: anyone who can see a task can add a dependency; anyone active can r
 
 **Accounts:** new sign-ups are `pending` and see nothing until a Super Admin sets them `active`. The system refuses to remove or deactivate the last active Super Admin.
 
+## Adding people
+
+Two ways in:
+
+1. **Invitation (Admin screen, Super Admin only).** Record the person's email, name, job title, role and projects with `admin_invite`. When they create an account with that email they are active straight away with that role and those projects. `admin_cancel_invite` withdraws an unused invitation. No email is sent; tell the person which address to use. Super Admin cannot be given by invitation: invite with another role, then promote.
+2. **Open sign-up.** Anyone else who creates an account waits as `pending` until a Super Admin approves them.
+
+An invitation trusts the email address, so keep "Confirm email" switched on in Supabase Auth.
+
 ## Project-lead flow
 1. Project Admin / PM / Super Admin: `suggest_project_lead(project, nominee)`. One open suggestion per project.
 2. Founder / Super Admin: `decide_lead_suggestion(id, approve)`.

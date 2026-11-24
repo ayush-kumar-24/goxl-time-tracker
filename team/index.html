@@ -6,7 +6,7 @@
 <title>GoXL Team Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* Layout: forest sidebar, cream workspace, lime used only for the primary action and the active nav item (GoXL brand guide). */
 :root{
@@ -15,12 +15,12 @@
   --accent:#1B4332; --accent-ink:#F6F7F3; --accent-soft:#E3ECDC;
   --good:#2E7D4F; --warn:#C9861C; --bad:#C4443A; --good-soft:#E0F0E5; --warn-soft:#FAEEDA; --bad-soft:#F9E3E0;
   --c1:#1B4332; --c2:#C9861C; --c3:#6D4C9F; --c4:#2F6690; --c5:#B5446E; --c6:#5F7A00; --c7:#5B6B63;
-  --display:"Montserrat",system-ui,sans-serif; --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --display:"Montserrat",system-ui,sans-serif; --body:"Montserrat",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
   --r:6px; color-scheme:light;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--ink);font:13px/1.55 var(--body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{background:var(--bg);color:var(--ink);font:13px/1.55 var(--body);letter-spacing:-.005em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 button,select,input,textarea{font:inherit;color:inherit}
 h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
 .app{display:grid;grid-template-columns:224px 1fr;height:100%}
@@ -76,7 +76,7 @@ b,strong{font-weight:600}
 .btn.danger{color:var(--bad)}
 .btn[disabled]{opacity:.5;cursor:not-allowed}
 :focus-visible{outline:2px solid var(--forest-mid);outline-offset:2px}
-select,input[type=text],input[type=number],input[type=date],input[type=search],textarea{border:1px solid var(--line);background:var(--panel);border-radius:var(--r);padding:8px 10px;min-width:0}
+select,input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],input[type=search],textarea{border:1px solid var(--line);background:var(--panel);border-radius:var(--r);padding:8px 10px;min-width:0}
 select:focus,input:focus,textarea:focus{border-color:var(--forest-mid);outline:none;box-shadow:0 0 0 3px rgba(41,88,67,.14)}
 textarea{width:100%;resize:vertical;min-height:70px}
 input[type=checkbox]{width:16px;height:16px;accent-color:var(--forest)}
@@ -217,7 +217,7 @@ const people = [
   {id:'viraj',   name:'Viraj',          role:'Founder & CEO',            cap:0,  member:false, c:'var(--c7)'},
   {id:'sumit',   name:'Sumit Suman',    role:'Project Manager',          cap:40, member:true,  c:'var(--c1)'},
   {id:'ayush',   name:'Ayush Kumar',    role:'AI Lead',                  cap:40, member:true,  c:'var(--c3)'},
-  {id:'aria',    name:'Aria',           role:'Full-stack AI Developer',  cap:40, member:true,  c:'var(--c4)'},
+  {id:'aarya',    name:'Aarya',           role:'Full-stack AI Developer',  cap:40, member:true,  c:'var(--c4)'},
   {id:'savitri', name:'Savitri',        role:'AWS Cloud & Backend',      cap:40, member:true,  c:'var(--c2)'},
   {id:'pranjal', name:'Pranjal',        role:'AWS Cloud & Backend',      cap:40, member:true,  c:'var(--c6)'},
   {id:'akshat',  name:'Akshat',         role:'Marketing',                cap:40, member:true,  c:'var(--c5)'},
@@ -235,16 +235,16 @@ const S = {
   active:{}, seq:100,
   tasks:[
     {id:'t1', title:'Finalize PID scoring schema',        project:'clarityos', who:'ayush',   est:6,  status:'done',  deps:[]},
-    {id:'t2', title:'Diagnosis API endpoints',            project:'clarityos', who:'aria',    est:10, status:'doing', deps:['t1']},
+    {id:'t2', title:'Diagnosis API endpoints',            project:'clarityos', who:'aarya',    est:10, status:'doing', deps:['t1']},
     {id:'t3', title:'Provision staging on AWS (ECS + RDS)',project:'clarityos',who:'savitri', est:8,  status:'doing', deps:[]},
     {id:'t4', title:'CI/CD pipeline and secrets',         project:'clarityos', who:'pranjal', est:6,  status:'todo',  deps:['t3']},
-    {id:'t5', title:'Founder report PDF generator',       project:'clarityos', who:'aria',    est:8,  status:'todo',  deps:['t2']},
+    {id:'t5', title:'Founder report PDF generator',       project:'clarityos', who:'aarya',    est:8,  status:'todo',  deps:['t2']},
     {id:'t12',title:'Architecture review for ClarityOS',  project:'clarityos', who:'bharat',  est:2,  status:'todo',  deps:['t3']},
     {id:'t6', title:'Ally conversation memory design',    project:'ally',      who:'ayush',   est:8,  status:'doing', deps:[]},
     {id:'t7', title:'Ally backend: sessions and auth',    project:'ally',      who:'pranjal', est:12, status:'todo',  deps:['t3']},
     {id:'t8', title:'Ally positioning and pricing copy',  project:'ally',      who:'akshat',  est:6,  status:'doing', deps:[]},
     {id:'t9', title:'Partner pitch deck',                 project:'ally',      who:'sumit',   est:6,  status:'todo',  deps:['t8']},
-    {id:'t10',title:'Contributor log dashboard',          project:'wie',       who:'aria',    est:10, status:'todo',  deps:['t11']},
+    {id:'t10',title:'Contributor log dashboard',          project:'wie',       who:'aarya',    est:10, status:'todo',  deps:['t11']},
     {id:'t11',title:'Time-entry data model on Postgres',  project:'wie',       who:'savitri', est:6,  status:'done',  deps:[]},
     {id:'t13',title:'Launch email sequence',              project:'site',      who:'akshat',  est:6,  status:'todo',  deps:['t8']},
     {id:'t14',title:'Sprint plan and weekly report',      project:'site',      who:'sumit',   est:6,  status:'doing', deps:[]},
@@ -261,40 +261,40 @@ const S = {
     {id:'d4',name:'Partner proposal (draft)',type:'Proposal',project:'ally',owner:'sumit',upd:'Mon 12:15',
      body:'Draft proposal for a distribution partner.\n\n- Scope of the Ally rollout\n- Revenue share structure, to be agreed\n- Timeline and responsibilities for each side'},
     {id:'d5',name:'Sprint notes, 16 Nov',type:'Notes',project:'site',owner:'sumit',upd:'Mon 18:00',
-     body:'Sprint goal: staging live and Ally auth unblocked by Thursday.\n\n- Savitri owns staging; Pranjal and Bharat wait on it\n- Aria continues diagnosis endpoints\n- Akshat finishes positioning copy so the pitch deck and email sequence can start'},
+     body:'Sprint goal: staging live and Ally auth unblocked by Thursday.\n\n- Savitri owns staging; Pranjal and Bharat wait on it\n- Aarya continues diagnosis endpoints\n- Akshat finishes positioning copy so the pitch deck and email sequence can start'},
     {id:'d6',name:'Advisor review checklist',type:'Notes',project:'clarityos',owner:'bharat',upd:'Mon 17:30',
      body:'What Bharat checks in each architecture review.\n\n- Data flow and where personal data is stored\n- Failure modes and rollback path\n- Cost per active client\n- What the team can maintain without help'}
   ],
   msgs:[
     {ch:'general',who:'sumit',t:'09:58',x:'Good morning. Sprint goal is staging live by Thursday. Please log time from the board, not at the end of the day.'},
-    {ch:'general',who:'viraj',t:'10:02',x:'Thanks Sumit. Aria, Pranjal: shout early if the AWS work blocks you.'},
+    {ch:'general',who:'viraj',t:'10:02',x:'Thanks Sumit. Aarya, Pranjal: shout early if the AWS work blocks you.'},
     {ch:'general',who:'pranjal',t:'10:10',x:'Ally auth is waiting on the staging VPC. I added it as a dependency on the board.'},
-    {ch:'clarityos',who:'ayush',t:'10:41',x:'PID schema is final and marked done. Aria, the diagnosis endpoints are unblocked.'},
-    {ch:'clarityos',who:'aria',t:'10:44',x:'Picked it up and started my timer.'},
+    {ch:'clarityos',who:'ayush',t:'10:41',x:'PID schema is final and marked done. Aarya, the diagnosis endpoints are unblocked.'},
+    {ch:'clarityos',who:'aarya',t:'10:44',x:'Picked it up and started my timer.'},
     {ch:'clarityos',who:'savitri',t:'11:20',x:'RDS is up. Load balancer and Secrets Manager next, about two hours.'},
     {ch:'ally',who:'akshat',t:'11:35',x:'Positioning draft is in Docs. I need feedback before I start the email sequence.'},
     {ch:'ally',who:'bharat',t:'12:05',x:'Read it. Keep the tagline short. I will comment on the doc tonight.'},
-    {ch:'wie',who:'savitri',t:'09:30',x:'Time-entry tables are merged. The dashboard work can start whenever Aria is free.'},
+    {ch:'wie',who:'savitri',t:'09:30',x:'Time-entry tables are merged. The dashboard work can start whenever Aarya is free.'},
     {ch:'marketing',who:'akshat',t:'10:20',x:'LinkedIn posts for launch week are scheduled.'}
   ],
   channels:[['general','general'],['clarityos','ClarityOS'],['ally','GoXL Ally'],['wie','Work Intelligence Engine'],['marketing','marketing']]
 };
 // entries: [person, task, dayIndex, startHour, startMin, minutes]
 [['sumit','t14',0,10,0,90],['sumit','t14',0,14,0,120],['ayush','t1',0,10,0,180],['ayush','t1',0,15,0,120],['ayush','t6',0,17,30,60],
- ['aria','t2',0,10,30,240],['aria','t2',0,15,30,150],['savitri','t3',0,10,0,200],['savitri','t11',0,14,0,180],
+ ['aarya','t2',0,10,30,240],['aarya','t2',0,15,30,150],['savitri','t3',0,10,0,200],['savitri','t11',0,14,0,180],
  ['pranjal','t3',0,11,0,150],['pranjal','t7',0,15,0,120],['akshat','t15',0,10,0,210],['akshat','t8',0,15,0,120],['bharat','t3',0,17,0,45],
- ['sumit','t14',1,10,0,100],['ayush','t6',1,10,0,150],['aria','t2',1,10,0,180],['savitri','t3',1,10,0,150],['savitri','t11',1,14,0,90],
+ ['sumit','t14',1,10,0,100],['ayush','t6',1,10,0,150],['aarya','t2',1,10,0,180],['savitri','t3',1,10,0,150],['savitri','t11',1,14,0,90],
  ['pranjal','t3',1,10,30,120],['pranjal','t7',1,14,0,60],['akshat','t8',1,10,0,140],['bharat','t3',1,12,0,30]
 ].forEach((e,i)=>{ const st=WEEK0+e[2]*DAY+(e[3]*60+e[4])*MIN; S.entries.push({id:'e'+i,person:e[0],task:e[1],start:st,end:st+e[5]*MIN}); });
 const now0 = Date.now();
-S.active = { ayush:{task:'t6',start:now0-47*MIN}, aria:{task:'t2',start:now0-95*MIN}, savitri:{task:'t3',start:now0-130*MIN}, akshat:{task:'t8',start:now0-20*MIN} };
+S.active = { ayush:{task:'t6',start:now0-47*MIN}, aarya:{task:'t2',start:now0-95*MIN}, savitri:{task:'t3',start:now0-130*MIN}, akshat:{task:'t8',start:now0-20*MIN} };
 
 /* ---------- Access control, priorities (roles are sample assignments) ---------- */
 const ROLES = {super_admin:'Super Admin',founder:'Founder',project_admin:'Project Admin',project_lead:'Project Lead',pm:'Project Manager',member:'Member',advisor:'Advisor'};
 const PERMS = [['addProject','Create projects'],['suggestLead','Suggest a project lead'],['approveLead','Approve project leads'],['addTask','Add tasks'],['uploadSheet','Upload task sheet'],['setPriority','Set priority and due date'],['reassign','Reassign tasks'],['uploadDoc','Upload documents'],['viewReports','View reports'],['founderDash','View founder dashboard'],['manageAccess','Manage access (admin panel)']];
 const PRIO = {urgent:{n:'Urgent',o:0,cls:'bad'},high:{n:'High',o:1,cls:'warn'},medium:{n:'Medium',o:2,cls:''},low:{n:'Low',o:3,cls:''}};
-const RK0 = {viraj:'super_admin',sumit:'pm',ayush:'project_lead',aria:'member',savitri:'member',pranjal:'member',akshat:'member',bharat:'advisor'};
-const ACC0 = {sumit:['clarityos','ally','wie','site'],ayush:['clarityos','ally'],aria:['clarityos','wie'],savitri:['clarityos','wie'],pranjal:['clarityos','ally'],akshat:['ally','site'],bharat:['clarityos','ally']};
+const RK0 = {viraj:'super_admin',sumit:'pm',ayush:'project_lead',aarya:'member',savitri:'member',pranjal:'member',akshat:'member',bharat:'advisor'};
+const ACC0 = {sumit:['clarityos','ally','wie','site'],ayush:['clarityos','ally'],aarya:['clarityos','wie'],savitri:['clarityos','wie'],pranjal:['clarityos','ally'],akshat:['ally','site'],bharat:['clarityos','ally']};
 people.forEach(p => { p.rk=RK0[p.id]; p.on=true; p.acc=ACC0[p.id]||[]; });
 const PRI0 = {t1:'high',t2:'urgent',t3:'urgent',t4:'high',t5:'medium',t12:'medium',t6:'high',t7:'high',t8:'medium',t9:'medium',t10:'low',t11:'medium',t13:'low',t14:'medium',t15:'low'};
 const DUE0 = {t2:'2026-11-20',t3:'2026-11-19',t4:'2026-11-21',t7:'2026-11-24',t8:'2026-11-20',t14:'2026-11-20'};
@@ -403,7 +403,7 @@ const views = {};
 
 /* ---------- Task sheet import (CSV) ---------- */
 const SHEET_HEAD = 'title,project,assignee,priority,estimate,due,depends_on';
-const SHEET_EX = SHEET_HEAD + '\n"Write API docs for diagnosis endpoints",ClarityOS,Aria,High,5,2026-11-24,Diagnosis API endpoints\nLoad test staging,ClarityOS,Savitri,Medium,4,2026-11-26,Provision staging on AWS (ECS + RDS)\nLaunch week social calendar,Marketing & Launch,Akshat,Low,3,2026-11-27,\nBroken row example,Nowhere,Nobody,Soon,abc,tomorrow,';
+const SHEET_EX = SHEET_HEAD + '\n"Write API docs for diagnosis endpoints",ClarityOS,Aarya,High,5,2026-11-24,Diagnosis API endpoints\nLoad test staging,ClarityOS,Savitri,Medium,4,2026-11-26,Provision staging on AWS (ECS + RDS)\nLaunch week social calendar,Marketing & Launch,Akshat,Low,3,2026-11-27,\nBroken row example,Nowhere,Nobody,Soon,abc,tomorrow,';
 function parseCSV(t){
   const rows=[]; let r=[], c='', q=false;
   for(let i=0;i<t.length;i++){ const ch=t[i];
@@ -548,7 +548,7 @@ views.admin = () => {
     ${PERMS.map(([k,n])=>`<tr><td>${n}</td>${rk.map(r=>`<td class="r"><input type="checkbox" data-perm="${r}:${k}" ${S.perms[r][k]?'checked':''} ${r==='super_admin'?'disabled':''} aria-label="${ROLES[r]}: ${n}"></td>`).join('')}</tr>`).join('')}
     <tr><td>Add task dependencies</td>${rk.map(()=>'<td class="r"><input type="checkbox" checked disabled aria-label="Always on"></td>').join('')}</tr></tbody></table></div></div>
   <div class="grid g2" style="margin-top:16px">
-    ${LIVE?'<div class="card"><h2>Adding people</h2><p class="muted" style="margin:0">New people create their own account on the sign-in screen. They appear in the table above as Pending until you approve them. Then choose their role and tick their projects.</p></div>':`<div class="card"><h2>Invite a person</h2><div style="display:flex;flex-direction:column;gap:10px">
+    ${LIVE?liveInviteCard():`<div class="card"><h2>Invite a person</h2><div style="display:flex;flex-direction:column;gap:10px">
       <label class="field">Name<input type="text" id="inName" placeholder="Full name"></label>
       <label class="field">Job title<input type="text" id="inJob" placeholder="For example, QA engineer"></label>
       <label class="field">Role<select id="inRole">${rk.filter(k=>k!=='super_admin').map(k=>`<option value="${k}" ${k==='member'?'selected':''}>${ROLES[k]}</option>`).join('')}</select></label>
@@ -562,7 +562,7 @@ const projChip = id => `<span class="chip"><i style="background:${PR(id).c}"></i
 /* ---------- Work Intelligence Engine: daily logs and founder analytics (ported from the reference app) ---------- */
 const LOG_CATS = ['Client Diagnostics','Client Delivery / Ops','Product — ClarityOS','Product — GoXL Ally','Product — BROKK-N','Engineering / Dev','Design','Research & QA','Content & Marketing','Sales & BD','Admin & Finance','Founder Support'];
 const DEPTS = ['Product','Engineering / AI','Design','Research & QA','Client Ops','Content & Marketing','Sales & BD','Finance & Admin',"Founder's Office"];
-const DEPT0 = {viraj:"Founder's Office",sumit:'Product',ayush:'Engineering / AI',aria:'Engineering / AI',savitri:'Engineering / AI',pranjal:'Engineering / AI',akshat:'Content & Marketing',bharat:'Engineering / AI'};
+const DEPT0 = {viraj:"Founder's Office",sumit:'Product',ayush:'Engineering / AI',aarya:'Engineering / AI',savitri:'Engineering / AI',pranjal:'Engineering / AI',akshat:'Content & Marketing',bharat:'Engineering / AI'};
 const isoDay = ms => { const d=new Date(ms); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 const today = () => isoDay(Date.now());
 const ago = k => isoDay(Date.now() - k*DAY);
@@ -575,20 +575,20 @@ const blankNT = () => ({assignedTo:'',task:'',priority:'Medium',deadline:'',reas
 const LT = (name,cat,pri,pl,ac,st,pct,blk) => Object.assign(blankTask(),{taskName:name,category:cat,priority:pri,plannedTime:pl,actualTime:ac,status:st,percentComplete:String(pct),blocked:!!blk,blockedBy:blk?blk[0]:'',impactLevel:blk?blk[1]:'Medium',blockReason:blk?blk[4]:'',waitingSince:blk?ago(blk[2]):'',expectedResolution:blk?ago(blk[3]):''});
 const LOG = (who,k,tasks,o={}) => { const p=people.find(x=>x.name===who); return {id:'l'+(++S.seq),submittedAt:Date.now(),employee:{name:who,department:DEPT0[p.id],role:p.role,date:ago(k)},tasks,newTasksForOthers:o.nt||[],wins:o.wins||'',challenges:{slowedDown:o.slow||'',needsSupport:o.support||''},learnings:{learned:o.learn||'',processImprovement:o.proc||''},tomorrowPlan:o.plan||''}; };
 S.logs.push(
-  LOG('Ayush Kumar',0,[LT('Ally conversation memory design','Product — GoXL Ally','High','3h','3.5h','In Progress',60),LT('Review PID scoring edge cases','Product — ClarityOS','Medium','2h','1.5h','Completed',100)],{wins:'✔ PID edge cases closed\n✔ Memory design draft shared with Bharat',slow:'No staging data to test recall against',support:'Decide how long Ally remembers a founder\'s history',learn:'Short summaries recall better than full transcripts',plan:'Finish memory design\nPair with Aria on diagnosis endpoints'}),
-  LOG('Aria',0,[LT('Diagnosis API endpoints','Engineering / Dev','High','5h','6h','In Progress',70),LT('Founder report PDF generator','Engineering / Dev','Medium','3h','0.5h','Not Started',10,['Savitri','High',2,1,'Needs staging database credentials'])],{wins:'✔ Intake and scoring endpoints return real data',slow:'No staging environment to test against',nt:[{assignedTo:'Savitri',task:'Share staging DB credentials',priority:'High',deadline:ago(-1),reason:'Report generator is blocked'}],plan:'Finish endpoint validation'}),
+  LOG('Ayush Kumar',0,[LT('Ally conversation memory design','Product — GoXL Ally','High','3h','3.5h','In Progress',60),LT('Review PID scoring edge cases','Product — ClarityOS','Medium','2h','1.5h','Completed',100)],{wins:'✔ PID edge cases closed\n✔ Memory design draft shared with Bharat',slow:'No staging data to test recall against',support:'Decide how long Ally remembers a founder\'s history',learn:'Short summaries recall better than full transcripts',plan:'Finish memory design\nPair with Aarya on diagnosis endpoints'}),
+  LOG('Aarya',0,[LT('Diagnosis API endpoints','Engineering / Dev','High','5h','6h','In Progress',70),LT('Founder report PDF generator','Engineering / Dev','Medium','3h','0.5h','Not Started',10,['Savitri','High',2,1,'Needs staging database credentials'])],{wins:'✔ Intake and scoring endpoints return real data',slow:'No staging environment to test against',nt:[{assignedTo:'Savitri',task:'Share staging DB credentials',priority:'High',deadline:ago(-1),reason:'Report generator is blocked'}],plan:'Finish endpoint validation'}),
   LOG('Savitri',0,[LT('Provision staging on AWS (ECS + RDS)','Engineering / Dev','High','6h','8h','In Progress',75),LT('Secrets Manager and cost alarms','Engineering / Dev','Medium','2h','1h','Waiting',30,['Viraj (Founder)','High',3,2,'Needs approval for the AWS billing limit'])],{wins:'✔ RDS is up in private subnets',slow:'Billing limit approval is holding up the rest',support:'Approve the AWS budget so staging can finish',plan:'Load balancer, then share credentials'}),
   LOG('Pranjal',0,[LT('Ally auth and sessions','Engineering / Dev','High','5h','0h','Not Started',0,['Savitri','High',2,1,'Waiting on the staging VPC']),LT('CI/CD pipeline draft','Engineering / Dev','Medium','3h','3h','In Progress',40)],{wins:'✔ Pipeline draft runs on every push',slow:'Auth work cannot start without the VPC'}),
   LOG('Akshat',0,[LT('Ally positioning and pricing copy','Content & Marketing','High','4h','4h','In Progress',80),LT('LinkedIn launch posts','Content & Marketing','Low','2h','1.5h','Completed',100)],{wins:'✔ Launch posts scheduled',plan:'Send positioning copy to Sumit and Bharat'}),
   LOG('Sumit Suman',0,[LT('Sprint plan and weekly report','Admin & Finance','Medium','2h','2h','Completed',100),LT('Partner pitch deck','Sales & BD','Medium','3h','1h','Not Started',20,['Akshat','Medium',1,-1,'Needs final positioning copy'])],{wins:'✔ Sprint plan agreed with the team',plan:'Start pitch deck once copy lands'}),
   LOG('Ayush Kumar',1,[LT('Review PID scoring edge cases','Product — ClarityOS','Medium','3h','3h','In Progress',70),LT('Ally architecture notes','Product — GoXL Ally','Medium','2h','2h','Completed',100)],{wins:'✔ Architecture notes shared'}),
-  LOG('Aria',1,[LT('Diagnosis API endpoints','Engineering / Dev','High','6h','6.5h','In Progress',45)],{wins:'✔ Schema wired to the database layer'}),
+  LOG('Aarya',1,[LT('Diagnosis API endpoints','Engineering / Dev','High','6h','6.5h','In Progress',45)],{wins:'✔ Schema wired to the database layer'}),
   LOG('Savitri',1,[LT('Provision staging on AWS (ECS + RDS)','Engineering / Dev','High','6h','9h','In Progress',50),LT('Time-entry tables for the work engine','Engineering / Dev','Medium','2h','2h','Completed',100)],{wins:'✔ Time-entry tables merged',slow:'Networking took longer than planned'}),
   LOG('Pranjal',1,[LT('CI/CD pipeline draft','Engineering / Dev','Medium','4h','3.5h','In Progress',25),LT('Ally backend design','Engineering / Dev','High','3h','3h','Completed',100)]),
   LOG('Akshat',1,[LT('Ally positioning and pricing copy','Content & Marketing','High','4h','3h','In Progress',50)],{wins:'✔ Three tagline directions drafted'}),
   LOG('Sumit Suman',1,[LT('Sprint plan and weekly report','Admin & Finance','Medium','3h','3h','In Progress',70)]),
   LOG('Ayush Kumar',2,[LT('PID scoring schema','Product — ClarityOS','High','6h','6h','Completed',100)],{wins:'✔ Scoring schema final'}),
-  LOG('Aria',2,[LT('Diagnosis API endpoints','Engineering / Dev','High','5h','5h','In Progress',20)]),
+  LOG('Aarya',2,[LT('Diagnosis API endpoints','Engineering / Dev','High','5h','5h','In Progress',20)]),
   LOG('Savitri',2,[LT('Provision staging on AWS (ECS + RDS)','Engineering / Dev','High','6h','7h','In Progress',25)]),
   LOG('Akshat',2,[LT('LinkedIn launch posts','Content & Marketing','Low','3h','3h','In Progress',60)]),
   LOG('Sumit Suman',3,[LT('Client check-ins','Client Ops','Medium','3h','3h','Completed',100)].map(t=>Object.assign(t,{category:'Client Delivery / Ops'}))),

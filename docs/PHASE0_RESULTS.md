@@ -45,6 +45,12 @@ Five people sign up on the sign-in screen and each works in their own browser se
 - **Active account with no project:** sees no projects, tasks, project channels, documents or other people's logs, cannot download a project file even with its exact path, cannot post into a project channel.
 - **Sign-in:** wrong password refused with a clear message; sign out and sign in again work.
 
+## Added after Phase 0 review
+
+- **Typography:** smaller, lighter text in Montserrat; sentence case instead of wide uppercase. Layout unchanged.
+- **Sample data:** "Aria" renamed to "Aarya".
+- **Invitations:** a Super Admin can add a person by email with a role and projects (`supabase/migrations/20261125090000_invitations.sql`, Admin screen). 25 database checks and 10 browser checks cover it; the browser suite is now 76 of 76.
+
 ## Not verified
 
 - **Hosted Supabase.** Run `docs/STAGING_SETUP.md` once GoXL's organisation exists. Differences between a local stack and a hosted project are possible.

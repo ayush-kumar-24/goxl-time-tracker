@@ -61,7 +61,7 @@ const section = t => console.log('\n--- ' + t + ' ---');
     ok('no "Viewing as" switcher in real mode', await viraj.locator('#who').count() === 0);
 
     const sumit = await signUp('sumit', 'Sumit Suman', 'sumit@goxl.test');
-    const aria = await signUp('aria', 'Aria', 'aria@goxl.test');
+    const aarya = await signUp('aarya', 'Aarya', 'aarya@goxl.test');
     const ayush = await signUp('ayush', 'Ayush Kumar', 'ayush@goxl.test');
     const omar = await signUp('omar', 'Omar', 'omar@goxl.test');
     ok('second account waits for approval', /Waiting for approval/i.test(await sumit.locator('#overlay').innerText()));
@@ -75,7 +75,7 @@ const section = t => console.log('\n--- ' + t + ' ---');
 
     await reload(viraj); await nav(viraj, 'admin');
     ok('Super Admin sees four pending accounts', await viraj.locator('button[data-act="toggleon"]:has-text("Pending: approve")').count() === 4);
-    for (const n of ['Sumit Suman', 'Aria', 'Ayush Kumar', 'Omar']) {
+    for (const n of ['Sumit Suman', 'Aarya', 'Ayush Kumar', 'Omar']) {
       const row = viraj.locator('#main tbody tr', { has: viraj.locator(`b:text-is("${n}")`) }).first();
       await act(viraj, () => row.locator('button[data-act="toggleon"]').click());
     }
@@ -95,20 +95,20 @@ const section = t => console.log('\n--- ' + t + ' ---');
     { const m = await main(sumit); ok('PM sees the new project', /ClarityOS/i.test(m), m.slice(0, 120)); }
 
     await reload(viraj); await nav(viraj, 'admin');
-    for (const n of ['Aria', 'Ayush Kumar']) {
+    for (const n of ['Aarya', 'Ayush Kumar']) {
       const row = viraj.locator('#main tbody tr', { has: viraj.locator(`b:text-is("${n}")`) }).first();
       await act(viraj, () => row.locator('input[data-acc]').first().check());
     }
-    ok('Super Admin grants Aria and Ayush access to ClarityOS', await viraj.locator('input[data-acc]:checked').count() >= 2);
+    ok('Super Admin grants Aarya and Ayush access to ClarityOS', await viraj.locator('input[data-acc]:checked').count() >= 2);
 
     await reload(sumit); await nav(sumit, 'tasks');
     await sumit.click('[data-act="newtask"]');
     const assignees = await sumit.$$eval('#nw option', o => o.map(x => x.textContent));
-    ok('assignee list offers only people who can see the project', assignees.includes('Aria') && assignees.includes('Ayush Kumar') && !assignees.includes('Omar'), assignees.join(', '));
+    ok('assignee list offers only people who can see the project', assignees.includes('Aarya') && assignees.includes('Ayush Kumar') && !assignees.includes('Omar'), assignees.join(', '));
     const mk = async (title, who, prio) => { if (await sumit.locator('#newform').count() === 0) await sumit.click('[data-act="newtask"]'); await sumit.fill('#nt', title); await sumit.selectOption('#nw', { label: who }); await sumit.selectOption('#npr', prio);
       const t = await act(sumit, () => sumit.click('#newform button[type=submit]')); await sumit.keyboard.press('Escape'); return t; };
     ok('PM creates a task for Ayush', /Task created/.test(await mk('Finalize PID scoring schema', 'Ayush Kumar', 'high')));
-    ok('PM creates a task for Aria', /Task created/.test(await mk('Diagnosis API endpoints', 'Aria', 'urgent')));
+    ok('PM creates a task for Aarya', /Task created/.test(await mk('Diagnosis API endpoints', 'Aarya', 'urgent')));
     await sumit.click('.tcard:has-text("Diagnosis API endpoints")');
     await sumit.selectOption('#depSel', { index: 1 });
     ok('PM adds a dependency', /Dependency added/.test(await act(sumit, () => sumit.click('[data-act="adddep"]'))));
@@ -122,28 +122,28 @@ const section = t => console.log('\n--- ' + t + ' ---');
     const pmAdmin = await raw(sumit, 'POST', '/rest/v1/rpc/admin_set_role', { p_user: omarId, p_role: 'founder' });
     ok('PM: hand-made request cannot change roles', pmAdmin.status >= 400 && /Only a Super Admin/.test(JSON.stringify(pmAdmin.body)));
 
-    section('Member (Aria)');
-    await aria.click('[data-auth="recheck"]'); await aria.waitForSelector('#side .nav');
-    const ariaNav = await navIds(aria);
-    ok('member sees no Admin or Founder dashboard', !ariaNav.includes('admin') && !ariaNav.includes('founder'));
-    await nav(aria, 'tasks');
-    ok('member sees the project tasks', /Diagnosis API endpoints/.test(await main(aria)));
-    ok('member has no New task button', await aria.locator('[data-act="newtask"]').count() === 0);
-    await aria.click('.tcard:has-text("Diagnosis API endpoints")');
-    ok('member cannot change priority in the drawer', await aria.locator('#prioSel').count() === 0);
-    ok('member cannot reassign in the drawer', await aria.locator('#assign').isDisabled());
-    const blockedStart = await act(aria, () => aria.click('.drawer [data-act="start"]'));
+    section('Member (Aarya)');
+    await aarya.click('[data-auth="recheck"]'); await aarya.waitForSelector('#side .nav');
+    const aaryaNav = await navIds(aarya);
+    ok('member sees no Admin or Founder dashboard', !aaryaNav.includes('admin') && !aaryaNav.includes('founder'));
+    await nav(aarya, 'tasks');
+    ok('member sees the project tasks', /Diagnosis API endpoints/.test(await main(aarya)));
+    ok('member has no New task button', await aarya.locator('[data-act="newtask"]').count() === 0);
+    await aarya.click('.tcard:has-text("Diagnosis API endpoints")');
+    ok('member cannot change priority in the drawer', await aarya.locator('#prioSel').count() === 0);
+    ok('member cannot reassign in the drawer', await aarya.locator('#assign').isDisabled());
+    const blockedStart = await act(aarya, () => aarya.click('.drawer [data-act="start"]'));
     ok('member cannot start a timer on a blocked task', /blocked/i.test(blockedStart), blockedStart);
-    await aria.keyboard.press('Escape');
-    const forgeDone = await raw(aria, 'PATCH', '/rest/v1/tasks?id=eq.' + T2.id, { status: 'done' });
+    await aarya.keyboard.press('Escape');
+    const forgeDone = await raw(aarya, 'PATCH', '/rest/v1/tasks?id=eq.' + T2.id, { status: 'done' });
     ok('member: hand-made request cannot mark a task done directly', forgeDone.status >= 400, JSON.stringify(forgeDone));
-    const forgeMove = await raw(aria, 'PATCH', '/rest/v1/tasks?id=eq.' + T2.id, { priority: 'low' });
+    const forgeMove = await raw(aarya, 'PATCH', '/rest/v1/tasks?id=eq.' + T2.id, { priority: 'low' });
     ok('member: hand-made request cannot change priority', forgeMove.status >= 400 && /cannot change priority/.test(JSON.stringify(forgeMove.body)));
-    const forgeTask = await raw(aria, 'POST', '/rest/v1/tasks', { project_id: T2.project_id, title: 'Sneaky', created_by: omarId });
+    const forgeTask = await raw(aarya, 'POST', '/rest/v1/tasks', { project_id: T2.project_id, title: 'Sneaky', created_by: omarId });
     ok('member: hand-made request cannot create a task', forgeTask.status >= 400);
-    const forgeTime = await raw(aria, 'POST', '/rest/v1/time_entries', { task_id: T2.id });
+    const forgeTime = await raw(aarya, 'POST', '/rest/v1/time_entries', { task_id: T2.id });
     ok('member: hand-made request cannot insert time entries', forgeTime.status >= 400);
-    const stillTodo = await raw(aria, 'GET', '/rest/v1/tasks?select=status,priority&id=eq.' + T2.id);
+    const stillTodo = await raw(aarya, 'GET', '/rest/v1/tasks?select=status,priority&id=eq.' + T2.id);
     ok('the task is unchanged after those attempts', stillTodo.body[0].status === 'todo' && stillTodo.body[0].priority === 'urgent');
 
     section('Project Lead (Ayush) and the timer flow');
@@ -151,8 +151,8 @@ const section = t => console.log('\n--- ' + t + ' ---');
     await nav(ayush, 'time');
     ok('lead starts a timer on his task', /Timer started/.test(await act(ayush, () => ayush.click('[data-act="start"]'))));
     ok('running timer shows in the top bar', await ayush.locator('#top .pill.run').count() === 1);
-    await reload(aria); await nav(aria, 'dashboard');
-    ok('another person sees Ayush working now', /Ayush Kumar[\s\S]*Finalize PID scoring schema/.test(await main(aria)));
+    await reload(aarya); await nav(aarya, 'dashboard');
+    ok('another person sees Ayush working now', /Ayush Kumar[\s\S]*Finalize PID scoring schema/.test(await main(aarya)));
     await ayush.waitForTimeout(1200);
     const doneMsg = await act(ayush, () => ayush.click('#main [data-act="done"]'));
     ok('completing a task reports what it unblocked', /Unblocked: Diagnosis API endpoints/.test(doneMsg), doneMsg);
@@ -161,34 +161,34 @@ const section = t => console.log('\n--- ' + t + ' ---');
     ok('server recorded completion and stopped the timer', t1row.body[0].status === 'done' && !!t1row.body[0].done_at && running.body.length === 0);
 
     section('Member continues: timer, chat, document, daily log');
-    await reload(aria); await nav(aria, 'time');
-    ok('unblocked task can now be started', /Timer started/.test(await act(aria, () => aria.click('#main [data-act="start"]'))));
-    await nav(aria, 'chat');
-    await aria.click('.chans button:has-text("ClarityOS")');
-    await aria.fill('#msgIn', 'Picked up the diagnosis endpoints.'); await aria.click('[data-act="send"]');
-    await aria.waitForFunction(() => /Picked up the diagnosis endpoints/.test(document.querySelector('#msgs').innerText), null, { timeout: 8000 });
+    await reload(aarya); await nav(aarya, 'time');
+    ok('unblocked task can now be started', /Timer started/.test(await act(aarya, () => aarya.click('#main [data-act="start"]'))));
+    await nav(aarya, 'chat');
+    await aarya.click('.chans button:has-text("ClarityOS")');
+    await aarya.fill('#msgIn', 'Picked up the diagnosis endpoints.'); await aarya.click('[data-act="send"]');
+    await aarya.waitForFunction(() => /Picked up the diagnosis endpoints/.test(document.querySelector('#msgs').innerText), null, { timeout: 8000 });
     ok('member posts in the project channel', true);
-    await nav(aria, 'projects');
-    const up = await act(aria, async () => { await aria.setInputFiles('input[data-up]', { name: 'api-notes.md', mimeType: 'text/markdown', buffer: Buffer.from('Diagnosis API notes\n\n- intake endpoint\n- scoring endpoint') }); });
+    await nav(aarya, 'projects');
+    const up = await act(aarya, async () => { await aarya.setInputFiles('input[data-up]', { name: 'api-notes.md', mimeType: 'text/markdown', buffer: Buffer.from('Diagnosis API notes\n\n- intake endpoint\n- scoring endpoint') }); });
     ok('member uploads a document', /Uploaded api-notes\.md/.test(up), up);
-    await nav(aria, 'docs');
-    ok('document preview shows the text', /intake endpoint/.test(await aria.locator('#docprev').innerText()));
-    const docRow = (await raw(aria, 'GET', '/rest/v1/docs?select=storage_path')).body[0];
-    const signed = await aria.evaluate(async path => { const cfg = window.GOXL_CONFIG, k = Object.keys(localStorage).find(x => /auth-token$/.test(x)), tok = JSON.parse(localStorage.getItem(k)).access_token;
+    await nav(aarya, 'docs');
+    ok('document preview shows the text', /intake endpoint/.test(await aarya.locator('#docprev').innerText()));
+    const docRow = (await raw(aarya, 'GET', '/rest/v1/docs?select=storage_path')).body[0];
+    const signed = await aarya.evaluate(async path => { const cfg = window.GOXL_CONFIG, k = Object.keys(localStorage).find(x => /auth-token$/.test(x)), tok = JSON.parse(localStorage.getItem(k)).access_token;
       const r = await fetch(cfg.supabaseUrl + '/storage/v1/object/sign/project-docs/' + path, { method: 'POST', headers: { apikey: cfg.supabaseKey, authorization: 'Bearer ' + tok, 'content-type': 'application/json' }, body: JSON.stringify({ expiresIn: 60 }) });
       const j = await r.json(); if (!j.signedURL) return { status: r.status, text: JSON.stringify(j) };
       const f = await fetch(cfg.supabaseUrl + '/storage/v1' + j.signedURL); return { status: f.status, text: await f.text() }; }, docRow.storage_path);
     ok('the stored file can be opened by a project member', signed.status === 200 && /scoring endpoint/.test(signed.text), JSON.stringify(signed).slice(0, 160));
-    await nav(aria, 'log');
-    await aria.selectOption('#f-employee-department', 'Engineering / AI');
-    await aria.click('[data-act="logfill"]'); await aria.waitForTimeout(200);
-    ok('daily log fills from tracked time', (await aria.inputValue('#f-tasks-0-taskName')) === 'Diagnosis API endpoints');
-    await aria.fill('#f-wins', '✔ Intake endpoint returns real data');
-    ok('member submits a daily log', /Saved\. 1 task/.test(await act(aria, () => aria.click('[data-act="logsubmit"]'))));
-    await reload(aria);
-    ok('session survives a page reload (stays signed in)', await aria.locator('#side .nav').count() > 0 && await aria.locator('#authform').count() === 0);
-    await nav(aria, 'log');
-    ok('saved log is loaded back from the database', /is saved/.test(await main(aria)));
+    await nav(aarya, 'log');
+    await aarya.selectOption('#f-employee-department', 'Engineering / AI');
+    await aarya.click('[data-act="logfill"]'); await aarya.waitForTimeout(200);
+    ok('daily log fills from tracked time', (await aarya.inputValue('#f-tasks-0-taskName')) === 'Diagnosis API endpoints');
+    await aarya.fill('#f-wins', '✔ Intake endpoint returns real data');
+    ok('member submits a daily log', /Saved\. 1 task/.test(await act(aarya, () => aarya.click('[data-act="logsubmit"]'))));
+    await reload(aarya);
+    ok('session survives a page reload (stays signed in)', await aarya.locator('#side .nav').count() > 0 && await aarya.locator('#authform').count() === 0);
+    await nav(aarya, 'log');
+    ok('saved log is loaded back from the database', /is saved/.test(await main(aarya)));
 
     section('Active account with no project access (Omar)');
     await omar.click('[data-auth="recheck"]'); await omar.waitForSelector('#side .nav');
@@ -210,7 +210,7 @@ const section = t => console.log('\n--- ' + t + ' ---');
 
     section('Super Admin: oversight and deactivation');
     await reload(viraj); await nav(viraj, 'founder');
-    ok('founder dashboard shows the submitted log', /Aria/.test(await main(viraj)) && /1 log\(s\)/.test(await main(viraj)));
+    ok('founder dashboard shows the submitted log', /Aarya/.test(await main(viraj)) && /1 log\(s\)/.test(await main(viraj)));
     await nav(viraj, 'admin');
     const log = await viraj.locator('#main .grid.g2 .card').nth(1).innerText();
     ok('activity log lists the admin changes', /Changed role of/.test(log) && /Project access/.test(log), log.slice(0, 120));
@@ -224,19 +224,42 @@ const section = t => console.log('\n--- ' + t + ' ---');
     const selfOff = await act(viraj, () => selfRow.locator('button[data-act="toggleon"]').click());
     ok('Super Admin cannot deactivate their own account', /cannot change your own status/.test(selfOff), selfOff);
 
+    section('Inviting a new person');
+    await nav(viraj, 'admin');
+    await viraj.fill('#inEmail', 'Neha@goxl.test'); await viraj.fill('#inName', 'Neha Rao'); await viraj.fill('#inJob', 'QA engineer');
+    await viraj.selectOption('#inRole', 'member'); await viraj.check('[data-invproj] >> nth=0');
+    const invMsg = await act(viraj, () => viraj.click('#invform button[type=submit]'));
+    ok('Super Admin invites a person with a role and a project', /Neha Rao is invited/.test(invMsg), invMsg);
+    ok('the invitation is listed as waiting', /Waiting to sign up \(1\)[\s\S]*neha@goxl\.test/i.test(await main(viraj)));
+    const dupInv = await act(viraj, async () => { await viraj.fill('#inEmail', 'aarya@goxl.test'); await viraj.fill('#inName', 'Aarya'); await viraj.click('#invform button[type=submit]'); });
+    ok('inviting someone who already has an account is refused', /already has an account/.test(dupInv), dupInv);
+    const pmInvite = await raw(sumit, 'POST', '/rest/v1/rpc/admin_invite', { p_email: 'friend@goxl.test', p_full_name: 'Friend', p_job_title: '', p_role: 'founder', p_projects: [] });
+    ok('PM: hand-made request cannot invite anyone', pmInvite.status >= 400 && /Only a Super Admin/.test(JSON.stringify(pmInvite.body)));
+    const pmPeek = await raw(sumit, 'GET', '/rest/v1/invitations?select=email');
+    ok('PM: hand-made request cannot read invitations', pmPeek.status === 200 && pmPeek.body.length === 0);
+    const neha = await signUp('neha', 'Neha Rao', 'neha@goxl.test');
+    ok('invited person gets straight in, with no approval wait', await neha.locator('#side .nav').count() > 0);
+    ok('invited person has the invited role', /Member/.test(await neha.locator('#side .me').innerText()) && !(await navIds(neha)).includes('admin'));
+    await nav(neha, 'projects');
+    ok('invited person sees the invited project', /ClarityOS/i.test(await main(neha)));
+    await reload(viraj); await nav(viraj, 'admin');
+    ok('the invitation leaves the waiting list once used', !/Waiting to sign up/i.test(await main(viraj)));
+    const walkIn = await signUp('walkin', 'Walk In', 'walkin@goxl.test');
+    ok('someone who was not invited still waits for approval', /Waiting for approval/i.test(await walkIn.locator('#overlay').innerText()));
+
     section('Sign-out and sign-in');
-    await aria.click('[data-act="signout"]'); await aria.waitForSelector('#authform', { timeout: 15000 });
+    await aarya.click('[data-act="signout"]'); await aarya.waitForSelector('#authform', { timeout: 15000 });
     ok('sign out returns to the sign-in screen', true);
-    await aria.fill('#auEmail', 'aria@goxl.test'); await aria.fill('#auPass', 'wrong-password'); await aria.click('#authform button[type=submit]');
-    await aria.waitForSelector('#authform [role=alert]');
-    ok('wrong password is refused with a clear message', /do not match/.test(await aria.locator('#authform [role=alert]').innerText()));
-    await aria.fill('#auEmail', 'aria@goxl.test'); await aria.fill('#auPass', PASS); await aria.click('#authform button[type=submit]');
-    await aria.waitForSelector('#side .nav', { timeout: 15000 });
-    ok('correct password signs back in', /Aria/.test(await aria.locator('#side .me').innerText()));
+    await aarya.fill('#auEmail', 'aarya@goxl.test'); await aarya.fill('#auPass', 'wrong-password'); await aarya.click('#authform button[type=submit]');
+    await aarya.waitForSelector('#authform [role=alert]');
+    ok('wrong password is refused with a clear message', /do not match/.test(await aarya.locator('#authform [role=alert]').innerText()));
+    await aarya.fill('#auEmail', 'aarya@goxl.test'); await aarya.fill('#auPass', PASS); await aarya.click('#authform button[type=submit]');
+    await aarya.waitForSelector('#side .nav', { timeout: 15000 });
+    ok('correct password signs back in', /Aarya/.test(await aarya.locator('#side .me').innerText()));
 
     section('Page health');
     ok('no script errors on any page during the run', pageErrors.length === 0, pageErrors.slice(0, 3).join(' | '));
-    if (process.env.SHOTS) for (const k of ['viraj', 'sumit', 'aria']) { await nav(U[k].page, k === 'viraj' ? 'admin' : 'tasks'); await U[k].page.screenshot({ path: process.env.SHOTS + '/' + k + '.png' }); }
+    if (process.env.SHOTS) for (const k of ['viraj', 'sumit', 'aarya']) { await nav(U[k].page, k === 'viraj' ? 'admin' : 'tasks'); await U[k].page.screenshot({ path: process.env.SHOTS + '/' + k + '.png' }); }
   } catch (e) {
     fails++; console.log('FAIL test run stopped early: ' + (e.stack || e.message).split('\n').slice(0, 4).join(' / '));
     if (pageErrors.length) console.log('  page errors: ' + pageErrors.slice(0, 3).join(' | '));

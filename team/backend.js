@@ -54,9 +54,10 @@
       sb.from('messages').select('id,channel,user_id,body,created_at').order('id', { ascending: false }).limit(500),
       sb.from('lead_suggestions').select('id,project_id,nominee_id,suggested_by,status,decided_by,created_at'),
       sb.from('daily_logs').select('id,user_id,log_date,payload,submitted_at').gte('log_date', ago(45)),
-      sb.from('audit_log').select('id,actor_id,action,created_at').order('id', { ascending: false }).limit(30)
+      sb.from('audit_log').select('id,actor_id,action,created_at').order('id', { ascending: false }).limit(30),
+      sb.from('invitations').select('email,full_name,job_title,role,project_ids,created_at').is('accepted_at', null).order('created_at')
     ])).map(must);
-    const [prof, perms, projs, acc, tasks, deps, ents, docs, msgs, leads, logs, aud] = rs;
+    const [prof, perms, projs, acc, tasks, deps, ents, docs, msgs, leads, logs, aud, invs] = rs;
     const sig = JSON.stringify(rs);
     const changed = sig !== lastSig; lastSig = sig;
 
@@ -98,6 +99,7 @@
       return Object.assign({ tasks: [], newTasksForOthers: [], wins: '', challenges: {}, learnings: {}, tomorrowPlan: '' }, b,
         { id: l.id, submittedAt: Date.parse(l.submitted_at), employee: Object.assign({}, b.employee, { name: p.name, role: p.role, date: l.log_date }) }); });
     S.audit = aud.map(a => ({ t: Date.parse(a.created_at), who: a.actor_id || '', x: a.action }));
+    S.invites = invs;   // only a Super Admin receives any rows
 
     // Drop selections that point at things this person can no longer see.
     if (S.open && !['new', 'sheet', 'newproject'].includes(S.open) && !seen.has(S.open)) S.open = null;
@@ -141,7 +143,6 @@
   /* ---------- Actions: each replaces the demo function of the same name ---------- */
   audit = function () {};            // the database writes its own audit log
   sysMsg = function (pid, text) { sb.from('messages').insert({ channel: pid, user_id: S.user, body: text }).then(() => {}); };
-  invite = function () { toast('New people create their own account on the sign-in screen.'); };
 
   startTimer = function (pid, tid) {
     if (S.active[pid] && S.active[pid].task === tid) return;
@@ -263,6 +264,36 @@
     try { await sb.auth.signOut(); } catch (_) { /* signing out locally is enough */ }
     location.reload();
   };
+
+  /* ---------- Inviting people (Admin screen) ----------
+   * The Super Admin records an email, role and projects. When that person creates an account with
+   * the same email they are let straight in with that role and those projects. No email is sent. */
+  window.liveInviteCard = function () {
+    const roles = Object.keys(ROLES).filter(k => k !== 'super_admin'), inv = S.invites || [];
+    return `<div class="card"><h2>Invite a person</h2><form id="invform" style="display:flex;flex-direction:column;gap:10px" novalidate>
+      <label class="field">Work email<input type="email" id="inEmail" placeholder="name@goxl.in" autocomplete="off"></label>
+      <label class="field">Full name<input type="text" id="inName" placeholder="Full name" autocomplete="off"></label>
+      <label class="field">Job title<input type="text" id="inJob" placeholder="For example, QA engineer" autocomplete="off"></label>
+      <label class="field">Role<select id="inRole">${roles.map(k => `<option value="${k}" ${k === 'member' ? 'selected' : ''}>${ROLES[k]}</option>`).join('')}</select></label>
+      ${projects.length ? `<div class="field">Projects<div class="meta" style="font-weight:400">${projects.map(p => `<label style="display:inline-flex;gap:6px;align-items:center;color:var(--ink)"><input type="checkbox" data-invproj="${p.id}">${esc(p.name)}</label>`).join('')}</div></div>` : ''}
+      <button class="btn pri" type="submit" style="align-self:flex-start">Invite</button>
+      <p class="muted" style="margin:0">No email is sent. Ask the person to open the Team Hub and create an account with this email; they get in straight away with this role and these projects. Anyone who signs up without an invitation still waits for your approval.</p></form>
+      ${inv.length ? `<div class="sec" style="margin-top:14px"><h3>Waiting to sign up (${inv.length})</h3><div class="list">${inv.map(i => `<div class="li"><div class="grow"><div><b>${esc(i.full_name || i.email)}</b> <span class="chip">${esc(ROLES[i.role] || i.role)}</span></div><div class="muted">${esc(i.email)}${(i.project_ids || []).length ? ' · ' + i.project_ids.map(id => PR(id)).filter(Boolean).map(p => esc(p.name)).join(', ') : ' · no projects yet'}</div></div><button class="btn sm danger" data-inv-cancel="${esc(i.email)}">Cancel</button></div>`).join('')}</div></div>` : ''}</div>`;
+  };
+  document.addEventListener('submit', e => {
+    if (e.target.id !== 'invform') return;
+    e.preventDefault();
+    const email = $('#inEmail').value.trim(), name = $('#inName').value.trim();
+    if (!/^\S+@\S+\.\S+$/.test(email)) return toast('Enter the person\'s email address.');
+    if (!name) return toast('Enter the person\'s name.');
+    const projs = [...document.querySelectorAll('[data-invproj]:checked')].map(x => x.dataset.invproj);
+    run(() => rpc('admin_invite', { p_email: email, p_full_name: name, p_job_title: $('#inJob').value.trim(), p_role: $('#inRole').value, p_projects: projs }),
+      name + ' is invited. Ask them to create an account with ' + email.toLowerCase() + '.');
+  });
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-inv-cancel]'); if (!el) return;
+    run(() => rpc('admin_cancel_invite', { p_email: el.dataset.invCancel }), 'Invitation cancelled.');
+  });
 
   /* ---------- Live updates ---------- */
   function startLive() {
