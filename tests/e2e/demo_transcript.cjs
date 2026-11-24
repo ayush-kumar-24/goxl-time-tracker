@@ -37,7 +37,7 @@ let last = 'start';
   // 2. Timers and completion.
   await as('sumit'); await nav('time');
   await page.click('#main [data-act="start"]'); await snap('sumit starts a timer');
-  await page.click('[data-act="stop"]'); await snap('sumit pauses');
+  await page.click('#main [data-act="stop"]'); await snap('sumit pauses');
   await as('savitri'); await nav('time');
   await page.click('#main [data-act="done"]'); await snap('savitri marks done (unblocks others)');
   await nav('tasks'); await snap('board after completion');

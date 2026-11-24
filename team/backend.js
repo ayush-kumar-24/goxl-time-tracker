@@ -102,7 +102,7 @@
     S.invites = invs;   // only a Super Admin receives any rows
 
     // Drop selections that point at things this person can no longer see.
-    if (S.open && !['new', 'sheet', 'newproject'].includes(S.open) && !seen.has(S.open)) S.open = null;
+    if (S.open && !['new', 'sheet', 'newproject', 'quickstart'].includes(S.open) && !seen.has(S.open)) S.open = null;
     if (!S.docs.some(d => d.id === S.docSel)) S.docSel = S.docs.length ? S.docs[0].id : '';
     if (S.fPerson !== 'all' && !people.some(p => p.id === S.fPerson)) S.fPerson = 'all';
     if (S.fProject !== 'all' && !projects.some(p => p.id === S.fProject)) S.fProject = 'all';
