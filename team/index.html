@@ -341,7 +341,10 @@ const h = m => (m/60).toFixed(1) + 'h';
 const clock = ms => { const s=Math.max(0,Math.floor(ms/1000)); return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(n=>String(n).padStart(2,'0')).join(':'); };
 const tm = ms => new Date(ms).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 const dayName = i => ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i];
-const allEntries = () => S.entries.concat(Object.entries(S.active).map(([p,a]) => ({id:'live-'+p,person:p,task:a.task,start:a.start,end:Date.now(),live:true})));
+const allEntries = () => S.entries.concat(Object.entries(S.active).map(([p,a]) => ({id:'live-'+p,person:p,task:a.task,note:a.note||'',start:a.start,end:Date.now(),live:true})));
+// A timer either runs on a task or, with no task, carries a short note (general work).
+const entryTitle = e => e && e.task ? ((T(e.task)||{}).title||'') : ((e&&e.note)||'General work');
+const TP = id => (T(id)||{}).project;
 const emin = e => (e.end - e.start) / MIN;
 const openDeps = t => t.deps.map(T).filter(d => d.status !== 'done');
 const blocked = t => t.status === 'todo' && openDeps(t).length > 0;
@@ -372,7 +375,12 @@ function setAccess(pid, pr, on){ const p=P(pid); p.acc=on?[...new Set(p.acc.conc
 function setPerm(r, k, on){ S.perms[r][k]=on; audit(ROLES[r]+': '+PERMS.find(x=>x[0]===k)[1]+(on?' allowed':' removed')); toast('Permission updated for '+ROLES[r]+'.'); render(); }
 function openDoc(){ toast('Files open in a viewer in the real platform.'); }
 function signOut(){ try{localStorage.removeItem('goxl_user');}catch(e){} showSignin(); }
-function stopTimer(pid){ const a=S.active[pid]; if(!a) return; S.entries.push({id:'e'+(++S.seq),person:pid,task:a.task,start:a.start,end:Date.now()}); delete S.active[pid]; }
+function stopTimer(pid){ const a=S.active[pid]; if(!a) return; S.entries.push({id:'e'+(++S.seq),person:pid,task:a.task,note:a.note||'',start:a.start,end:Date.now()}); delete S.active[pid]; }
+function startGeneral(pid, note){
+  note=String(note||'').trim(); if(!note) return toast('Say what you are working on.');
+  stopTimer(pid); S.active[pid]={task:'',note:note.slice(0,200),start:Date.now()};
+  toast('Timer started at ' + tm(Date.now()) + '. Your previous timer, if any, was stopped.'); render();
+}
 function startTimer(pid, tid){
   const t=T(tid);
   if (!P(pid).member) return toast('Switch to a team member to track time.');
@@ -686,11 +694,12 @@ function fillFromTimer(){
   const d=draft(), t0=new Date(); t0.setHours(0,0,0,0);
   const E=allEntries().filter(e=>e.person===S.user&&e.start>=t0.getTime());
   if(!E.length) return toast('No time tracked today yet. Start a timer on the Time screen first.');
-  const by={}; E.forEach(e=>{ by[e.task]=(by[e.task]||0)+emin(e); });
+  const by={}, gen={}; E.forEach(e=>{ if(e.task) by[e.task]=(by[e.task]||0)+emin(e); else gen[entryTitle(e)]=(gen[entryTitle(e)]||0)+emin(e); });
   const CAT={clarityos:'Product — ClarityOS',ally:'Product — GoXL Ally',wie:'Engineering / Dev',site:'Content & Marketing'};
   const have=d.tasks.map(t=>t.taskName.trim().toLowerCase());
   const rows=Object.entries(by).filter(([id])=>!have.includes(T(id).title.toLowerCase())).map(([id,m])=>{ const t=T(id), od=openDeps(t);
     return Object.assign(blankTask(),{taskName:t.title,category:CAT[t.project]||'',priority:(t.priority==='urgent'||t.priority==='high')?'High':t.priority==='low'?'Low':'Medium',plannedTime:t.est+'h',actualTime:(Math.round(m/6)/10)+'h',status:t.status==='done'?'Completed':t.status==='doing'?'In Progress':'Not Started',percentComplete:String(t.status==='done'?100:Math.min(95,Math.round(m/60/t.est*100))),blocked:od.length>0,blockedBy:od.length?P(od[0].who).name:'',blockReason:od.length?'Waiting on "'+od[0].title+'"':'',waitingSince:od.length?today():''}); });
+  Object.entries(gen).filter(([n])=>!have.includes(n.toLowerCase())).forEach(([n,m])=>rows.push(Object.assign(blankTask(),{taskName:n,actualTime:(Math.round(m/6)/10)+'h',status:'Completed',percentComplete:'100'})));
   d.tasks=d.tasks.filter(t=>t.taskName.trim()).concat(rows);
   if(!d.tasks.length) d.tasks=[blankTask()];
   toast(rows.length?rows.length+' task(s) added from your timer.':'Your tracked tasks are already in the log.'); render();
@@ -774,7 +783,7 @@ views.dashboard = () => {
   </div>
   <div class="grid g2" style="margin-top:16px">
     <div class="card"><h2>Working now <small>${act.length} of ${members().length} members</small></h2><div class="list">
-      ${act.map(([p,a])=>`<div class="li">${av(p)}<div class="grow"><div><b>${esc(P(p).name)}</b></div><div class="muted">${esc(T(a.task).title)}</div></div><span class="mono" data-elapsed="${p}">${clock(Date.now()-a.start)}</span></div>`).join('')}
+      ${act.map(([p,a])=>`<div class="li">${av(p)}<div class="grow"><div><b>${esc(P(p).name)}</b></div><div class="muted">${esc(entryTitle(a))}</div></div><span class="mono" data-elapsed="${p}">${clock(Date.now()-a.start)}</span></div>`).join('')}
       ${members().filter(m=>!S.active[m.id]).map(m=>`<div class="li">${av(m.id)}<div class="grow"><div>${esc(m.name)}</div><div class="muted">${esc(m.role)}</div></div><span class="chip">Idle</span></div>`).join('')}
     </div></div>
     <div class="card"><h2>Waiting on a dependency <small>${bl.length} tasks</small></h2><div class="list">
@@ -788,7 +797,7 @@ views.dashboard = () => {
 function projectBars(){
   const E=allEntries();
   return visProjects().map(p=>{
-    const ts=S.tasks.filter(t=>t.project===p.id), est=ts.reduce((a,t)=>a+t.est,0), logged=E.filter(e=>T(e.task).project===p.id).reduce((a,e)=>a+emin(e),0)/60;
+    const ts=S.tasks.filter(t=>t.project===p.id), est=ts.reduce((a,t)=>a+t.est,0), logged=E.filter(e=>TP(e.task)===p.id).reduce((a,e)=>a+emin(e),0)/60;
     const pct=est>0?Math.min(100,logged/est*100):0;
     return `<div class="li"><div class="grow"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(p.name)}</b><span class="muted mono">${logged.toFixed(1)}h of ${est}h est.</span></div><div class="bar" style="margin-top:6px"><span style="width:${pct}%;background:${p.c}"></span></div></div></div>`;
   }).join('');
@@ -822,14 +831,14 @@ views.time = () => {
     const todo=S.tasks.filter(t=>t.who===me.id && t.status!=='done').sort((a,b)=>PRIO[a.priority].o-PRIO[b.priority].o);
     mine=`<div class="grid g2">
       <div class="card"><h2>${esc(me.name)}: timer</h2>
-        ${a?`<div class="mono" style="font-size:36px" data-elapsed="${me.id}">${clock(Date.now()-a.start)}</div><p><b>${esc(T(a.task).title)}</b><br><span class="muted">Started ${tm(a.start)}. Ends automatically when you mark it done or start another task.</span></p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn start pause" data-act="stop">Pause timer</button><button class="btn pri" style="min-height:40px;padding:10px 18px;font-size:13.5px" data-act="done" data-id="${a.task}">Mark done</button></div>`
-        :'<p class="muted">No timer running. Press Start on a task, or use Start timer at the top of any screen. The start time is saved for you.</p>'}
+        ${a?`<div class="mono" style="font-size:36px" data-elapsed="${me.id}">${clock(Date.now()-a.start)}</div><p><b>${esc(entryTitle(a))}</b><br><span class="muted">Started ${tm(a.start)}. ${a.task?'Ends automatically when you mark it done or start another task.':'General work, not on a task. Ends when you pause or start another timer.'}</span></p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn start pause" data-act="stop">Pause timer</button>${a.task?`<button class="btn pri" style="min-height:40px;padding:10px 18px;font-size:13.5px" data-act="done" data-id="${a.task}">Mark done</button>`:''}</div>`
+        :'<p class="muted">No timer running. Pick a task, or track general work without a task. The start time is saved for you.</p><button class="btn pri start" data-act="quickstart">Start timer</button>'}
       </div>
       <div class="card"><h2>My tasks <small>${todo.length} open</small></h2><div class="list">${todo.map(t=>`<div class="li"><div class="grow"><div>${esc(t.title)}</div><div class="muted">${blocked(t)?'Blocked by '+esc(openDeps(t)[0].title):h(taskMin(t.id))+' of '+t.est+'h'}</div></div>${blocked(t)?'<span class="chip bad">Blocked</span>':`<button class="btn start ${a&&a.task===t.id?'':'pri'}" data-act="start" data-id="${t.id}" ${a&&a.task===t.id?'disabled':''}>${a&&a.task===t.id?'Running':'Start'}</button>`}</div>`).join('') || '<p class="muted">No open tasks.</p>'}</div></div>
     </div>
     <div class="card" style="margin-top:16px"><h2>My recent time entries</h2><div class="tablewrap"><table><thead><tr><th>Day</th><th>Task</th><th>Start</th><th>End</th><th class="r">Duration</th></tr></thead><tbody>
-      ${todays.map(e=>`<tr><td>${dayLbl(e.start)}</td><td>${esc(T(e.task).title)}</td><td>${tm(e.start)}</td><td>${e.live?'<span class="chip acc">running</span>':tm(e.end)}</td><td class="r">${h(emin(e))}</td></tr>`).join('')}</tbody></table></div></div>`;
+      ${todays.map(e=>`<tr><td>${dayLbl(e.start)}</td><td>${esc(entryTitle(e))}${e.task?'':' <span class="chip">No task</span>'}</td><td>${tm(e.start)}</td><td>${e.live?'<span class="chip acc">running</span>':tm(e.end)}</td><td class="r">${h(emin(e))}</td></tr>`).join('')}</tbody></table></div></div>`;
   } else mine=`<div class="card"><h2>Founder view</h2><p class="muted">Time tracking belongs to team members. ${LIVE?'Read the team timesheet below.':'Use "Viewing as" in the top bar to try a timer, or read the team timesheet below.'}</p></div>`;
   return mine + `<div class="card" style="margin-top:16px"><h2>Team timesheet <small>hours per day, week of ${weekOf()}</small></h2><div class="tablewrap"><table><thead><tr><th>Member</th>${[0,1,2,3,4].map(i=>`<th class="r">${dayName(i)}</th>`).join('')}<th class="r">Total</th></tr></thead><tbody>
     ${members().map(m=>{ const row=[0,1,2,3,4].map(i=>E.filter(e=>e.person===m.id&&Math.floor((e.start-WEEK0)/DAY)===i).reduce((a,e)=>a+emin(e),0)); return `<tr><td>${esc(m.name)}</td>${row.map(v=>`<td class="r">${v?h(v):'–'}</td>`).join('')}<td class="r"><b>${h(row.reduce((a,b)=>a+b,0))}</b></td></tr>`; }).join('')}</tbody></table></div></div>`;
@@ -841,7 +850,7 @@ views.projects = () => {
   if(!visProjects().length) return head+'<div class="card"><p class="muted" style="margin:0">You do not have access to any project yet.</p></div>';
   return head+`<div class="grid">${visProjects().map(p=>{
     const ts=S.tasks.filter(t=>t.project===p.id), done=ts.filter(t=>t.status==='done').length, est=ts.reduce((a,t)=>a+t.est,0);
-    const by=members().map(m=>({m,min:E.filter(e=>e.person===m.id&&T(e.task).project===p.id).reduce((a,e)=>a+emin(e),0)})).filter(x=>x.min>0).sort((a,b)=>b.min-a.min);
+    const by=members().map(m=>({m,min:E.filter(e=>e.person===m.id&&TP(e.task)===p.id).reduce((a,e)=>a+emin(e),0)})).filter(x=>x.min>0).sort((a,b)=>b.min-a.min);
     const sum=by.reduce((a,x)=>a+x.min,0)||1;
     const pd=S.docs.filter(d=>d.project===p.id);
     return `<div class="card"><h2><span>${esc(p.name)}</span><small>${done} of ${ts.length} tasks done · ${(sum===1?0:sum/60).toFixed(1)}h logged · ${est}h estimated</small></h2>
@@ -869,14 +878,14 @@ views.docs = () => `<div class="toolbar"><input type="search" id="docQ" placehol
 
 function weekStats(){
   const E=weekEntries();
-  const perDay=[0,1,2,3,4].map(i=>projects.map(p=>E.filter(e=>Math.floor((e.start-WEEK0)/DAY)===i&&T(e.task).project===p.id).reduce((a,e)=>a+emin(e),0)));
+  const perDay=[0,1,2,3,4].map(i=>projects.map(p=>E.filter(e=>Math.floor((e.start-WEEK0)/DAY)===i&&TP(e.task)===p.id).reduce((a,e)=>a+emin(e),0)));
   return {E, perDay, total:E.reduce((a,e)=>a+emin(e),0)};
 }
 function reportText(){
   const {E,total}=weekStats(), bl=S.tasks.filter(blocked);
   return ['GoXL weekly report, week of '+weekOf()+' '+new Date(WEEK0).getFullYear(),'',
    `Hours logged: ${h(total)}   Tasks done: ${S.tasks.filter(t=>t.status==='done').length}/${S.tasks.length}   Blocked: ${bl.length}`,'','By project:',
-   ...projects.map(p=>`- ${p.name}: ${h(E.filter(e=>T(e.task).project===p.id).reduce((a,e)=>a+emin(e),0))}`),'','By member:',
+   ...projects.map(p=>`- ${p.name}: ${h(E.filter(e=>TP(e.task)===p.id).reduce((a,e)=>a+emin(e),0))}`),'','By member:',
    ...members().map(m=>`- ${m.name}: ${h(E.filter(e=>e.person===m.id).reduce((a,e)=>a+emin(e),0))}`),'','Blocked:',
    ...(bl.length?bl.map(t=>`- ${t.title} (waiting on ${openDeps(t).map(d=>d.title).join(', ')})`):['- none'])].join('\n');
 }
@@ -892,7 +901,7 @@ views.reports = () => {
         <div class="kpi"><b>${h(min)}</b><span>${m.cap}h weekly capacity · ${util}% used so far</span></div>
         <div class="bar" style="margin:10px 0"><span style="width:${Math.min(100,util)}%;background:${m.c}"></span></div>
         <div class="meta"><span>${done} done</span><span>${open} open</span></div>
-        <p class="muted" style="margin:8px 0 0">${a?'Now: '+esc(T(a.task).title):'Not tracking right now'}</p></div>`;
+        <p class="muted" style="margin:8px 0 0">${a?'Now: '+esc(entryTitle(a)):'Not tracking right now'}</p></div>`;
     }).join('')}</div>`;
   }
   const max=Math.max(1,...perDay.map(d=>d.reduce((a,b)=>a+b,0)/60));
@@ -932,7 +941,7 @@ function renderSide(){
 function renderTop(){
   const a=S.active[S.user];
   const mineOpen=S.tasks.filter(t=>t.who===S.user&&t.status!=='done').length;
-  $('#top').innerHTML=`<h1>${TITLE[S.view]}</h1>${a?`<span class="pill run"><span class="dot"></span>${esc(T(a.task).title)} <b class="mono" data-elapsed="${S.user}">${clock(Date.now()-a.start)}</b></span><button class="btn start pause" data-act="stop">Pause</button>`:(mineOpen?'<button class="btn pri start" data-act="quickstart">Start timer</button>':'')}
+  $('#top').innerHTML=`<h1>${TITLE[S.view]}</h1>${a?`<span class="pill run"><span class="dot"></span>${esc(entryTitle(a))} <b class="mono" data-elapsed="${S.user}">${clock(Date.now()-a.start)}</b></span><button class="btn start pause" data-act="stop">Pause</button>`:(P(S.user).member||mineOpen?'<button class="btn pri start" data-act="quickstart">Start timer</button>':'')}
    ${LIVE?'':`<label>Viewing as <select id="who">${people.filter(p=>p.on).map(p=>`<option value="${p.id}" ${p.id===S.user?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label>`}`;
 }
 function renderDrawer(){
@@ -942,7 +951,9 @@ function renderDrawer(){
     const list=S.tasks.filter(t=>t.who===S.user&&t.status!=='done').sort((a,b)=>(blocked(a)-blocked(b))||(PRIO[a.priority].o-PRIO[b.priority].o));
     o.innerHTML=`<div class="shade" data-act="close"><div class="drawer"><div style="display:flex;justify-content:space-between;gap:12px"><h2>Start a timer</h2><button class="btn sm" data-act="close">Close</button></div>
       <p class="muted" style="margin:0">Pick the task you are working on. Your previous timer, if any, stops by itself.</p>
-      <div class="list">${list.map(t=>`<div class="li"><div class="grow"><div><b>${esc(t.title)}</b></div><div class="meta" style="margin-top:4px">${prioChip(t.priority)}${projChip(t.project)}<span>${blocked(t)?'Waiting on '+esc(openDeps(t)[0].title):h(taskMin(t.id))+' of '+t.est+'h'}</span></div></div>${blocked(t)?'<span class="chip bad">Blocked</span>':`<button class="btn pri start" data-act="start" data-id="${t.id}">Start</button>`}</div>`).join('')||'<p class="muted" style="margin:0">You have no open tasks.</p>'}</div></div></div>`;
+      <div class="list">${list.map(t=>`<div class="li"><div class="grow"><div><b>${esc(t.title)}</b></div><div class="meta" style="margin-top:4px">${prioChip(t.priority)}${projChip(t.project)}<span>${blocked(t)?'Waiting on '+esc(openDeps(t)[0].title):h(taskMin(t.id))+' of '+t.est+'h'}</span></div></div>${blocked(t)?'<span class="chip bad">Blocked</span>':`<button class="btn pri start" data-act="start" data-id="${t.id}">Start</button>`}</div>`).join('')||`<p class="muted" style="margin:0">A timer runs on a task assigned to you, and you have none open. ${can('addTask')?(visProjects().length?'Create a task and assign it to yourself, then start it here.':'Create a project first, then add a task for yourself.'):'Ask your Project Manager or Lead to assign you a task.'}</p>${can('addTask')?`<div style="display:flex;gap:8px">${visProjects().length?'<button class="btn pri" data-act="newtask">New task</button>':(can('addProject')?'<button class="btn pri" data-act="gonewproject">Create a project</button>':'')}</div>`:''}`}</div>
+      <div class="sec"><h3>Without a task</h3><p class="muted" style="margin:0 0 8px">For meetings, support, learning or anything that is not a task. Say what you are doing.</p>
+        <form id="genform" style="display:flex;gap:8px;flex-wrap:wrap"><input type="text" id="genNote" maxlength="200" placeholder="For example, Client call" aria-label="What are you working on?" style="flex:1;min-width:180px"><button class="btn pri start" type="submit">Start</button></form></div></div></div>`;
     return;
   }
   if (S.open==='newproject'){
@@ -964,7 +975,7 @@ function renderDrawer(){
     o.innerHTML=`<div class="shade" data-act="close"><form class="drawer" id="newform"><h2>New task</h2>
       <label class="field">Title<input type="text" id="nt" required placeholder="What needs doing?"></label>
       <div class="row2"><label class="field">Project<select id="np">${visProjects().map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></label>
-      <label class="field">Assignee<select id="nw">${assignable((visProjects()[0]||{}).id).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select></label></div>
+      <label class="field">Assignee<select id="nw">${assignable((visProjects()[0]||{}).id).map(m=>`<option value="${m.id}" ${m.id===S.user?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label></div>
       <div class="row2"><label class="field">Estimate (hours)<input type="number" id="ne" min="0.5" step="0.5" value="4"></label>
       <label class="field">Priority<select id="npr">${Object.entries(PRIO).map(([k,v])=>`<option value="${k}" ${k==='medium'?'selected':''}>${v.n}</option>`).join('')}</select></label></div>
       <label class="field">Due date (optional)<input type="date" id="nd"></label>
@@ -1046,6 +1057,7 @@ document.addEventListener('click', e=>{
   else if(a==='opendoc'){ openDoc(id); }
   else if(a==='login'){ S.user=id; try{ if($('#keep').checked) localStorage.setItem('goxl_user',id); }catch(e){} $('#overlay').innerHTML=''; render(); }
 });
+document.addEventListener('submit', e=>{ if(e.target.id!=='genform') return; e.preventDefault(); const n=$('#genNote').value.trim(); if(!n) return toast('Say what you are working on.'); S.open=null; renderDrawer(); startGeneral(S.user,n); });
 document.addEventListener('change', e=>{
   const id=e.target.id, d=e.target.dataset;
   if(d.up){ [...e.target.files].forEach(f=>addDocFile(f,d.up)); e.target.value=''; return; }

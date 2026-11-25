@@ -49,7 +49,7 @@
       sb.from('project_access').select('project_id,user_id'),
       sb.from('tasks').select('id,project_id,title,assignee_id,priority,status,est_hours,due_date').order('created_at'),
       sb.from('task_dependencies').select('task_id,depends_on_id'),
-      sb.from('time_entries').select('id,task_id,user_id,started_at,ended_at').order('started_at', { ascending: false }).limit(1000),
+      sb.from('time_entries').select('id,task_id,user_id,note,started_at,ended_at').order('started_at', { ascending: false }).limit(1000),
       sb.from('docs').select('id,project_id,name,file_type,owner_id,storage_path,preview_text,created_at').order('created_at', { ascending: false }),
       sb.from('messages').select('id,channel,user_id,body,created_at').order('id', { ascending: false }).limit(500),
       sb.from('lead_suggestions').select('id,project_id,nominee_id,suggested_by,status,decided_by,created_at'),
@@ -83,10 +83,10 @@
       deps: deps.filter(d => d.task_id === t.id && seen.has(d.depends_on_id)).map(d => d.depends_on_id)
     }));
     S.entries = []; S.active = {};
-    ents.filter(e => seen.has(e.task_id)).forEach(e => {
+    ents.filter(e => !e.task_id || seen.has(e.task_id)).forEach(e => {   // no task = general work
       const start = Date.parse(e.started_at);
-      if (e.ended_at) S.entries.push({ id: e.id, person: e.user_id, task: e.task_id, start, end: Date.parse(e.ended_at) });
-      else S.active[e.user_id] = { task: e.task_id, start };
+      if (e.ended_at) S.entries.push({ id: e.id, person: e.user_id, task: e.task_id || '', note: e.note || '', start, end: Date.parse(e.ended_at) });
+      else S.active[e.user_id] = { task: e.task_id || '', note: e.note || '', start };
     });
     S.docs = docs.map(d => ({
       id: d.id, name: d.name, type: d.file_type || 'file', project: d.project_id, owner: d.owner_id || '', upd: stamp(d.created_at), path: d.storage_path,
@@ -148,6 +148,7 @@
     if (S.active[pid] && S.active[pid].task === tid) return;
     return run(() => rpc('start_timer', { p_task: tid }), () => 'Timer started at ' + tm(Date.now()) + '. Your previous timer, if any, was stopped.');
   };
+  startGeneral = (pid, note) => run(() => rpc('start_general_timer', { p_note: note }), () => 'Timer started at ' + tm(Date.now()) + '. Your previous timer, if any, was stopped.');
   pauseTimer = () => run(() => rpc('stop_timer'), 'Timer paused. Time saved.');
   markDone = tid => run(() => rpc('complete_task', { p_task: tid }), ids => {
     const freed = (ids || []).map(i => T(i)).filter(Boolean);
