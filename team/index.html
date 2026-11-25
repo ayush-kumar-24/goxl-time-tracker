@@ -545,17 +545,19 @@ function decideLead(rid,ok){
 }
 views.admin = () => {
   const rk=Object.keys(ROLES), all=p=>['super_admin','founder'].includes(p.rk);
-  return `<div class="card"><h2>People and access <small>${people.filter(p=>p.on).length} active of ${people.length}</small></h2><div class="tablewrap"><table><thead><tr><th>Person</th><th>Role</th><th>Status</th>${projects.map(p=>`<th>${esc(p.name)}</th>`).join('')}</tr></thead><tbody>
+  // Only a Super Admin can change anything here (the database refuses everyone else), so others get a read-only view.
+  const ro=LIVE&&P(S.user).rk!=='super_admin', off=ro?'disabled':'';
+  return `${ro?'<div class="card" style="margin-bottom:16px"><p class="muted" style="margin:0">View only. Only a Super Admin can change roles, status, project access, permissions or invitations.</p></div>':''}<div class="card"><h2>People and access <small>${people.filter(p=>p.on).length} active of ${people.length}</small></h2><div class="tablewrap"><table><thead><tr><th>Person</th><th>Role</th><th>Status</th>${projects.map(p=>`<th>${esc(p.name)}</th>`).join('')}</tr></thead><tbody>
     ${people.map(p=>`<tr><td><div style="display:flex;gap:8px;align-items:center">${av(p.id)}<span><b>${esc(p.name)}</b><br><span class="muted">${esc(p.role)}</span></span></div></td>
-      <td><select data-role="${p.id}" aria-label="Role for ${esc(p.name)}">${rk.map(k=>`<option value="${k}" ${p.rk===k?'selected':''}>${ROLES[k]}</option>`).join('')}</select></td>
-      <td><button class="btn sm ${p.on?'':'danger'}" data-act="toggleon" data-id="${p.id}">${p.on?'Active':p.status==='pending'?'Pending: approve':'Inactive'}</button></td>
-      ${projects.map(pr=>`<td><input type="checkbox" data-acc="${p.id}:${pr.id}" ${all(p)||p.acc.includes(pr.id)?'checked':''} ${all(p)?'disabled':''} aria-label="${esc(p.name)} access to ${esc(pr.name)}"></td>`).join('')}</tr>`).join('')}
+      <td><select data-role="${p.id}" ${off} aria-label="Role for ${esc(p.name)}">${rk.map(k=>`<option value="${k}" ${p.rk===k?'selected':''}>${ROLES[k]}</option>`).join('')}</select></td>
+      <td><button class="btn sm ${p.on?'':'danger'}" data-act="toggleon" data-id="${p.id}" ${off}>${p.on?'Active':p.status==='pending'?'Pending: approve':'Inactive'}</button></td>
+      ${projects.map(pr=>`<td><input type="checkbox" data-acc="${p.id}:${pr.id}" ${all(p)||p.acc.includes(pr.id)?'checked':''} ${all(p)||ro?'disabled':''} aria-label="${esc(p.name)} access to ${esc(pr.name)}"></td>`).join('')}</tr>`).join('')}
     </tbody></table></div><p class="note" style="margin-top:10px">Super Admin and Founder always see every project. Everyone else only sees the projects ticked here, including tasks, docs and chat channels.</p></div>
   <div class="card" style="margin-top:16px"><h2>What each role can do <small>Super Admin is fixed</small></h2><div class="tablewrap"><table><thead><tr><th>Permission</th>${rk.map(k=>`<th class="r">${ROLES[k]}</th>`).join('')}</tr></thead><tbody>
-    ${PERMS.map(([k,n])=>`<tr><td>${n}</td>${rk.map(r=>`<td class="r"><input type="checkbox" data-perm="${r}:${k}" ${S.perms[r][k]?'checked':''} ${r==='super_admin'?'disabled':''} aria-label="${ROLES[r]}: ${n}"></td>`).join('')}</tr>`).join('')}
+    ${PERMS.map(([k,n])=>`<tr><td>${n}</td>${rk.map(r=>`<td class="r"><input type="checkbox" data-perm="${r}:${k}" ${S.perms[r][k]?'checked':''} ${r==='super_admin'||ro?'disabled':''} aria-label="${ROLES[r]}: ${n}"></td>`).join('')}</tr>`).join('')}
     <tr><td>Add task dependencies</td>${rk.map(()=>'<td class="r"><input type="checkbox" checked disabled aria-label="Always on"></td>').join('')}</tr></tbody></table></div></div>
   <div class="grid g2" style="margin-top:16px">
-    ${LIVE?liveInviteCard():`<div class="card"><h2>Invite a person</h2><div style="display:flex;flex-direction:column;gap:10px">
+    ${LIVE?(ro?'':liveInviteCard()):`<div class="card"><h2>Invite a person</h2><div style="display:flex;flex-direction:column;gap:10px">
       <label class="field">Name<input type="text" id="inName" placeholder="Full name"></label>
       <label class="field">Job title<input type="text" id="inJob" placeholder="For example, QA engineer"></label>
       <label class="field">Role<select id="inRole">${rk.filter(k=>k!=='super_admin').map(k=>`<option value="${k}" ${k==='member'?'selected':''}>${ROLES[k]}</option>`).join('')}</select></label>
@@ -945,6 +947,12 @@ function renderDrawer(){
       <p class="muted" style="margin:0">You get access to the new project. Add tasks from the Tasks screen and give teammates access in Admin.</p></div></div>`;
     setTimeout(()=>{const x=$('#npName'); x&&x.focus();},0); return;
   }
+  if (S.open==='new' && !visProjects().length){
+    o.innerHTML=`<div class="shade" data-act="close"><div class="drawer"><h2>New task</h2>
+      <p class="muted">Every task belongs to a project, and you do not have one yet. ${can('addProject')?'Create a project first, then add tasks to it.':'Ask a Super Admin to give you access to a project.'}</p>
+      <div style="display:flex;gap:8px">${can('addProject')?'<button class="btn pri" type="button" data-act="gonewproject">Create a project</button>':''}<button class="btn" type="button" data-act="close">Close</button></div></div></div>`;
+    return;
+  }
   if (S.open==='new'){
     o.innerHTML=`<div class="shade" data-act="close"><form class="drawer" id="newform"><h2>New task</h2>
       <label class="field">Title<input type="text" id="nt" required placeholder="What needs doing?"></label>
@@ -994,6 +1002,7 @@ document.addEventListener('click', e=>{
   else if(a==='open'){ S.open=id; renderDrawer(); }
   else if(a==='newtask'){ if(!can('addTask')) return toast('Your role cannot add tasks.'); S.open='new'; renderDrawer(); }
   else if(a==='newproject'){ if(!can('addProject')) return toast('Your role cannot create projects.'); S.open='newproject'; S.npFiles=[]; renderDrawer(); }
+  else if(a==='gonewproject'){ if(!can('addProject')) return toast('Your role cannot create projects.'); S.view='projects'; S.open='newproject'; S.npFiles=[]; render(); }
   else if(a==='createproject'){ createProject(); }
   else if(a==='leadsuggest'){ const v=$('#lead-'+id).value; if(!v) return toast('Choose someone to suggest.'); suggestLead(id,v); }
   else if(a==='leadok'){ decideLead(id,true); }
