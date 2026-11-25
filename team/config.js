@@ -4,12 +4,14 @@
 // Both values filled in: the page asks people to sign in and reads and writes the real database.
 //
 //   supabaseUrl  Project URL, for example https://abcd1234.supabase.co
-//   supabaseKey  The project's PUBLISHABLE (anon) key. It is safe in the browser: Row Level
+//   supabaseKey  The project's PUBLISHABLE key. It is safe in the browser: Row Level
 //                Security decides what each signed-in person can do.
 //                NEVER put the service-role (secret) key here.
 //   realtime     true = live updates over a websocket; false = refresh every 20 seconds.
+//
+// Currently points at the GoXL Supabase project. To see the demo again, empty both values.
 window.GOXL_CONFIG = {
-  supabaseUrl: '',
-  supabaseKey: '',
+  supabaseUrl: 'https://pgffvjtcoszzywmzxhal.supabase.co',
+  supabaseKey: 'sb_publishable_OUUuCoOPzpdxMYrQXYvRDQ_6iyIGQ60',
   realtime: true
 };
