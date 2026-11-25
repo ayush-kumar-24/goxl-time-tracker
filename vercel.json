@@ -1,6 +1,7 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [{ "source": "/", "destination": "/team", "permanent": false }],
   "rewrites": [{ "source": "/team", "destination": "/team/index.html" }],
   "headers": [
     { "source": "/team/(.*)", "headers": [
