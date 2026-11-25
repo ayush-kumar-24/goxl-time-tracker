@@ -153,6 +153,7 @@
     const freed = (ids || []).map(i => T(i)).filter(Boolean);
     return freed.length ? 'Done. Unblocked: ' + freed.map(x => x.title).join(', ') : 'Done. Timer stopped and end time saved.';
   });
+  reopenTask = tid => run(() => rpc('reopen_task', { p_task: tid }), 'Task reopened.');
   addDep = function (tid, did) {
     if (!did) return;
     const wasDoing = T(tid) && T(tid).status === 'doing', dep = T(did);

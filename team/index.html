@@ -385,6 +385,10 @@ function startTimer(pid, tid){
   toast('Timer started at ' + tm(Date.now()) + '. Your previous timer, if any, was stopped.');
   render();
 }
+function reopenTask(tid){
+  const t=T(tid); t.status='todo';
+  toast(openDeps(t).length?'Task reopened. It is blocked until its dependencies are done.':'Task reopened.'); render();
+}
 function markDone(tid){
   const t=T(tid);
   Object.keys(S.active).forEach(p => { if (S.active[p].task===tid) stopTimer(p); });
@@ -543,6 +547,9 @@ function decideLead(rid,ok){
   sysMsg(p.id,ok?n.name+' is now the project lead.':'The suggestion of '+n.name+' as project lead was not approved.');
   toast(ok?n.name+' is now lead of '+p.name+'.':'Suggestion rejected.'); render();
 }
+// Database log lines name people and projects by id; show their names instead.
+const auditText = x => String(x).replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
+  id => people.some(p=>p.id===id) ? P(id).name : projects.some(p=>p.id===id) ? PR(id).name : 'a deleted item');
 views.admin = () => {
   const rk=Object.keys(ROLES), all=p=>['super_admin','founder'].includes(p.rk);
   // Only a Super Admin can change anything here (the database refuses everyone else), so others get a read-only view.
@@ -562,7 +569,7 @@ views.admin = () => {
       <label class="field">Job title<input type="text" id="inJob" placeholder="For example, QA engineer"></label>
       <label class="field">Role<select id="inRole">${rk.filter(k=>k!=='super_admin').map(k=>`<option value="${k}" ${k==='member'?'selected':''}>${ROLES[k]}</option>`).join('')}</select></label>
       <button class="btn pri" data-act="invite" style="align-self:flex-start">Add person</button></div></div>`}
-    <div class="card"><h2>Activity log <small>${LIVE?'latest changes':'this session'}</small></h2><div class="list">${S.audit.length?S.audit.slice(0,10).map(a=>`<div class="li"><div class="grow"><div>${esc(a.x)}</div><div class="muted">${esc(P(a.who).name)} · ${tm(a.t)}</div></div></div>`).join(''):'<p class="muted" style="margin:0">No changes yet. Change a role or a permission to see it logged here.</p>'}</div></div>
+    <div class="card"><h2>Activity log <small>${LIVE?'latest changes':'this session'}</small></h2><div class="list">${S.audit.length?S.audit.slice(0,10).map(a=>`<div class="li"><div class="grow"><div>${esc(auditText(a.x))}</div><div class="muted">${esc(P(a.who).name)} · ${tm(a.t)}</div></div></div>`).join(''):'<p class="muted" style="margin:0">No changes yet. Change a role or a permission to see it logged here.</p>'}</div></div>
   </div>`;
 };
 const statusChip = t => t.status==='done' ? '<span class="chip good">Done</span>' : blocked(t) ? '<span class="chip bad">Blocked</span>' : t.status==='doing' ? '<span class="chip acc">In progress</span>' : '<span class="chip">Ready</span>';
@@ -975,7 +982,7 @@ function renderDrawer(){
     <div class="row2"><label class="field">Assignee<select id="assign" ${can('reassign')?'':'disabled'}>${LIVE&&!t.who?'<option value="" selected>Unassigned</option>':''}${(LIVE?assignable(t.project).concat(people.filter(m=>m.id===t.who&&!assignable(t.project).includes(m))):activeMembers().concat(members().filter(m=>!m.on&&m.id===t.who))).map(m=>`<option value="${m.id}" ${m.id===t.who?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label>
       <div class="field">Time logged<b class="mono" style="font-size:18px;color:var(--ink)">${h(taskMin(t.id))} <span class="muted" style="font-size:12px">of ${t.est}h</span></b></div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      ${t.status!=='done'?`<button class="btn pri start" data-act="start" data-id="${t.id}" ${mine?'disabled':''}>${mine?'Timer running':'Start my timer'}</button><button class="btn" style="min-height:40px;padding:10px 16px" data-act="done" data-id="${t.id}">Mark done</button>`:'<span class="chip good">Completed</span>'}
+      ${t.status!=='done'?`<button class="btn pri start" data-act="start" data-id="${t.id}" ${mine?'disabled':''}>${mine?'Timer running':'Start my timer'}</button><button class="btn" style="min-height:40px;padding:10px 16px" data-act="done" data-id="${t.id}">Mark done</button>`:`<span class="chip good">Completed</span>${t.who===S.user||can('reassign')?`<button class="btn" style="min-height:40px;padding:10px 16px" data-act="reopen" data-id="${t.id}">Reopen task</button>`:''}`}
     </div>
     <div class="sec"><h3>Depends on</h3>${t.deps.length?t.deps.map(id=>{const d=T(id);return `<div class="li">${av(d.who)}<div class="grow"><div>${esc(d.title)}</div><div class="muted">${esc(P(d.who).name)}</div></div>${statusChip(d)}<button class="btn sm danger" data-act="rmdep" data-id="${d.id}" aria-label="Remove dependency">Remove</button></div>`;}).join(''):'<p class="muted" style="margin:0">No dependencies.</p>'}
       <div style="display:flex;gap:8px"><select id="depSel" style="flex:1" aria-label="Add dependency"><option value="">Add a task this one waits on…</option>${cands.map(x=>`<option value="${x.id}">${esc(x.title)} (${esc(P(x.who).name.split(' ')[0])})</option>`).join('')}</select><button class="btn" data-act="adddep">Add</button></div></div>
@@ -1027,6 +1034,7 @@ document.addEventListener('click', e=>{
   else if(a==='start'){ if(S.open==='quickstart') S.open=null; startTimer(S.user,id); }
   else if(a==='stop'){ pauseTimer(); }
   else if(a==='done'){ markDone(id); }
+  else if(a==='reopen'){ reopenTask(id); }
   else if(a==='adddep'){ addDep(S.open,$('#depSel').value); }
   else if(a==='rmdep'){ removeDep(S.open,id); }
   else if(a==='doc'){ S.docSel=id; $('#doclist').innerHTML=docList(); $('#docprev').innerHTML=docPreview(); }
